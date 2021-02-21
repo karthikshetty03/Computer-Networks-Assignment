@@ -62,12 +62,10 @@ int main(int argc , char *argv[])
         int received_len = recv(socket_desc, server_reply, sizeof (server_reply) , 0);
 
         if (flag == 0) {
-
-            int len = strlen(server_reply);
             int cnt = 0;
             int in = 0;
 
-            for(int i = 0; i < len; i++) {
+            for(int i = 0; i < received_len; i++) {
                 if(in == 0 && server_reply[i] != '\r')
                     continue;
                 else if(in == 0 && server_reply[i] == '\r')
@@ -112,5 +110,3 @@ int main(int argc , char *argv[])
 
     return 0;
 }
-
-//https://stackoverflow.com/questions/15445207/sending-image-jpeg-through-socket-in-c-linux

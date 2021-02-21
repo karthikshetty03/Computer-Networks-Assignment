@@ -5,10 +5,6 @@
 #include<sys/ioctl.h>
 #include<unistd.h>
 
-
-//This function is to be used once we have confirmed that an image is to be sent
-//It should read and output an image file
-
 int receive_image(int socket)
 { 
   int recv_size = 0, read_size, flag = 0;
@@ -33,7 +29,6 @@ int receive_image(int socket)
   int cnt = 0, ind = 0;
 
   do {
-
 
     if(flag == 0) {
       flag = 1;
