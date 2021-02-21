@@ -15,7 +15,7 @@ int receive_image(int socket)
   FILE *image;
 
   //send request to remote server
-  char *message = "GET /v1/images/shopdisney-logo-desktop_1f595224.jpeg?region=0,0,1536,300 HTTP/1.0\r\nHost: lumiere-a.akamaihd.net\r\n\r\n";
+  char *message = "GET https://lumiere-a.akamaihd.net/v1/images/shopdisney-logo-desktop_1f595224.jpeg?region=0,0,1536,300 HTTP/1.0\r\nHost: lumiere-a.akamaihd.net\r\n\r\n";
   /*
   char* message = "GET /images/branding/googlelogo/1x/googlelogo_color_272x92dp.png HTTP/1.0\r\nHost: www.google.com\r\n\r\n";
   */
@@ -40,20 +40,20 @@ int receive_image(int socket)
       read_size = read(socket, imagearray, 10241);
 
       for(int i = 0; i < read_size; i++) {
-          if(in == 0 && imagearray[i] != '\r')
+          if(in == 0 && imagearray[i] != '\r') {
               continue;
-          else if(in == 0 && imagearray[i] == '\r')
-          {
-              if(imagearray[i+1] == '\n' && imagearray[i+2] == '\r' && imagearray[i+3] == '\n')
-              {
+          }
+          else if(in == 0 && imagearray[i] == '\r') {
+              if(imagearray[i+1] == '\n' && imagearray[i+2] == '\r' && imagearray[i+3] == '\n') {
                   in = 1;
                   i += 3;
               }
           }
-          else if(in == 1)
+          else if(in == 1) {
               few_bytes[cnt++] = imagearray[i];
+          }
       }
-      
+
       few_bytes[cnt] = '\0';
       fwrite(few_bytes, 1, cnt, image);
       recv_size += read_size;
@@ -73,7 +73,7 @@ int receive_image(int socket)
 
 //download website
 int recieve_website(int socket) {
-
+  
 }
 
 
@@ -83,22 +83,21 @@ int recieve_website(int socket) {
 
 
 //driver code
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   int socket_desc;
   struct sockaddr_in server;
-
   socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-  if (socket_desc == -1)
+
+  if (socket_desc == -1) {
     printf("Could not create socket");
+  }
 
   //server.sin_addr.s_addr = inet_addr("142.250.80.14");
   server.sin_addr.s_addr = inet_addr("104.126.116.211");
   server.sin_family = AF_INET;
   server.sin_port = htons( 80 );
 
-  if (connect(socket_desc , (struct sockaddr *)&server , sizeof(server)) < 0)
-  {
+  if (connect(socket_desc , (struct sockaddr *)&server , sizeof(server)) < 0) {
     puts("connect error");
     return 1;
   }

@@ -12,7 +12,7 @@ int main(int argc , char *argv[])
     char *message;
     char server_reply[10000];
     char few_bytes[10000];
-    char *filename = "file.jpeg";
+    char *filename = "file.png";
     int total_len = 0;
 
     int len;
@@ -27,7 +27,7 @@ int main(int argc , char *argv[])
         printf("Could not create socket");
     }
 
-    server.sin_addr.s_addr = inet_addr("104.126.116.211");
+    server.sin_addr.s_addr = inet_addr("164.100.150.76");
     server.sin_family = AF_INET;
     server.sin_port = htons( 80 );
 
@@ -41,7 +41,7 @@ int main(int argc , char *argv[])
     puts("Connected\n");
 
     //Send request
-    message = "GET /v1/images/shopdisney-logo-desktop_1f595224.jpeg?region=0,0,1536,300 HTTP/1.0\r\nHost: lumiere-a.akamaihd.net\r\n\r\n";
+    message = "GET http://jandarshan.cg.nic.in/images/logo3.gif HTTP/1.0\r\nHost: jandarshan.cg.nic.in\r\n\r\n";
 
     if(send(socket_desc, message, strlen(message) , 0) < 0) {
         puts("Send failed");
@@ -97,7 +97,7 @@ int main(int argc , char *argv[])
             fwrite(server_reply, received_len, 1, file);
         }
 
-        if (total_len >= 21009) {
+        if (received_len == 0) {
             break;
         }
 
