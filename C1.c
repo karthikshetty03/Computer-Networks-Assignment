@@ -9,13 +9,13 @@
 int receive_image(int socket)
 {
   int recv_size = 0, read_size, flag = 0, cnt = 0, in = 0;
-  //char *filename = "capture.png";
-  char *filename = "capture.jpeg";
+  char *filename = "capture.png";
+  //char *filename = "capture.jpeg";
   char imagearray[10241], few_bytes[10241];
   FILE *image;
 
   //send request to remote server
-  char *message = "GET https://lumiere-a.akamaihd.net/v1/images/shopdisney-logo-desktop_1f595224.jpeg?region=0,0,1536,300 HTTP/1.0\r\nHost: lumiere-a.akamaihd.net\r\n\r\n";
+  char*  message = "GET http://jandarshan.cg.nic.in/images/logo3.gif HTTP/1.0\r\nHost: jandarshan.cg.nic.in\r\n\r\n";
   /*
   char* message = "GET /images/branding/googlelogo/1x/googlelogo_color_272x92dp.png HTTP/1.0\r\nHost: www.google.com\r\n\r\n";
   */
@@ -93,7 +93,9 @@ int main(int argc, char *argv[]) {
   }
 
   //server.sin_addr.s_addr = inet_addr("142.250.80.14");
-  server.sin_addr.s_addr = inet_addr("104.126.116.211");
+  //server.sin_addr.s_addr = inet_addr("104.126.116.211");
+  server.sin_addr.s_addr = inet_addr("164.100.150.76");
+
   server.sin_family = AF_INET;
   server.sin_port = htons( 80 );
 
