@@ -2,6 +2,7 @@
 #include<string.h>
 #include<sys/socket.h>
 #include<arpa/inet.h>
+#include <unistd.h>
 
 // www.axmag.com/download/pdfurl-guide.pdf
 int main(int argc , char *argv[])
@@ -26,7 +27,7 @@ int main(int argc , char *argv[])
         printf("Could not create socket");
     }
 
-    server.sin_addr.s_addr = inet_addr("23.195.74.33");
+    server.sin_addr.s_addr = inet_addr("104.126.116.211");
     server.sin_family = AF_INET;
     server.sin_port = htons( 80 );
 
@@ -42,16 +43,13 @@ int main(int argc , char *argv[])
     //Send request
     message = "GET /v1/images/shopdisney-logo-desktop_1f595224.jpeg?region=0,0,1536,300 HTTP/1.0\r\nHost: lumiere-a.akamaihd.net\r\n\r\n";
 
-    if ( send(socket_desc , message , strlen(message) , 0) < 0)
-    {
+    if(send(socket_desc, message, strlen(message) , 0) < 0) {
         puts("Send failed");
         return 1;
     }
 
-    puts("Data Send\n");
-
     remove(filename);
-    file = fopen(filename, "w");
+    file = fopen(filename, "wb");
 
     if (file == NULL) {
         printf("File could not opened");
@@ -61,9 +59,7 @@ int main(int argc , char *argv[])
 
     while (1)
     {
-        int received_len = recv(socket_desc, server_reply , sizeof server_reply , 0);
-
-        total_len += received_len;
+        int received_len = recv(socket_desc, server_reply, sizeof (server_reply) , 0);
 
         if (flag == 0) {
 
@@ -88,22 +84,33 @@ int main(int argc , char *argv[])
             fwrite(few_bytes, cnt, 1, file);
             flag = 1;
             printf("%s", server_reply);
-            printf("******************** Header separated ***********************");
+            total_len += received_len;
+
+            printf("*********************** Header separated ***************************\n");
+            printf("\nreceived = %d\ncurrent img total = %d\n", received_len, total_len);
+            printf("Data : \n");
+            puts(few_bytes);
         }
         else if(received_len) {
+            total_len += received_len;
+            printf("\nreceived = %d\ncurrent img total = %d\n", received_len, total_len);
+            printf("Data : \n");
+            puts(server_reply);
             fwrite(server_reply, received_len, 1, file);
         }
 
-        printf("\nReceived byte size = %d\nTotal length = %d\n", received_len, total_len);
-        memset(server_reply, '\0', sizeof server_reply);
-        if (received_len == 0) {
+        if (total_len >= 21009) {
             break;
         }
+
+        memset(server_reply, '\0', sizeof server_reply);
     }
 
-    puts("Reply received\n");
+    puts("\n***************** Complete Data recieved *******************************");
 
     fclose(file);
 
     return 0;
 }
+
+//https://stackoverflow.com/questions/15445207/sending-image-jpeg-through-socket-in-c-linux
