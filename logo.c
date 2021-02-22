@@ -156,17 +156,17 @@ int main(int argc , char *argv[])
                 else if(in == 0 && server_reply[i] == '\r')
                 {
                     if(server_reply[i+1] == '\n' && server_reply[i+2] == '\r' && server_reply[i+3] == '\n')
-                        in = 1, i+=3;
+                        in = 1, i+=3, server_reply[i] = '\0';
                 }
                 else if(in == 1)
                     few_bytes[cnt++] = server_reply[i];
             }
 
             few_bytes[cnt] = '\0';
-            server_reply[len-cnt] = '\0';
+            server_reply[cnt] = '\0';
+            puts(server_reply);
             fwrite(few_bytes, cnt, 1, file);
             flag = 1;
-            printf("%s", server_reply);
             total_len += received_len;
 
             //printf("*********************** Header separated ***************************\n");
