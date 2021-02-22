@@ -166,19 +166,12 @@ int main(int argc , char *argv[])
         endlen--;
     }
 
-    char host_url[10241];
-    int brk = 0;
-    for(int i = 6; i < strlen(web_url); i++) 
-        host_url[brk++] = web_url[i];
-
-    host_url[brk] = '\0';
-
     char *auth_str = base64Encoder("csf303:csf303");
     //char auth_str[10241] = "Y3NmMzAzOmNzZjMwMw==";
     //puts(auth_str);
     //Send request
     
-    char message[10241] = "GET ";
+    char message[10241] = "GET http://";
     strcat(message, web_url);
     strcat(message, "/");
     char* img_url = get_logo_url();
@@ -188,7 +181,7 @@ int main(int argc , char *argv[])
     //strcat(message, "http://lumiere-a.akamaihd.net/v1/images/shopdisney-logo-desktop_1f595224.jpeg?region=0,0,1536,300");
     //strcat(message, "http://info.in2p3.fr");
     strcat(message, " HTTP/1.1\r\nHost: ");
-    strcat(message, host_url);
+    strcat(message, web_url);
     //strcat(message, "lumiere-a.akamaihd.net");
     //strcat(message, "go.com");
     strcat(message, "\r\nProxy-Authorization: Basic ");
