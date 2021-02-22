@@ -32,7 +32,7 @@ char* get_logo_url() {
             
             for(int i = 5; word[i]!='"'; i++)
                 url[cnt++] = word[i];
-
+            url[cnt] = '\0';
             //puts(url);
             fclose(fptr);
             char* str = (char*)malloc(sizeof(char)*strlen(url));

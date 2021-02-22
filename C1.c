@@ -6,14 +6,15 @@
 #include <unistd.h>
 #include<stdbool.h>
 
-char* get_logo_url() {
+char* get_logo_url(char* filename) {
     char search_string[10241] = "SRC=";
     char word[10241];
 
     FILE *fptr;
-    fptr = fopen("file.html", "r");
+    fptr = fopen(filename, "r");
 
     while(fscanf(fptr, "%s", word) != EOF) {
+        puts(word);
         if(strlen(word) <= 6) {
             continue;
         }
@@ -28,9 +29,13 @@ char* get_logo_url() {
         req[4] = '\0';
 
         if(strcmp(search_string, req) == 0) {
+            printf("**************FOUND*****************\n");
+            
             for(int i = 5; word[i]!='"'; i++)
                 url[cnt++] = word[i];
-
+                
+            url[cnt] = '\0';
+            puts(url);
             fclose(fptr);
             char* str = (char*)malloc(sizeof(char)*strlen(url));
             strcpy(str, url);
@@ -122,19 +127,19 @@ int receive_file(int socket, char* filename, char* web_url, char* img_url, char*
   char imagearray[10241], few_bytes[10241];
   FILE *image;
 
-  
   //strip trailing slashes if any
   int len = strlen(web_url);
   while(web_url[len] == '/') {
       web_url[len] = '\0';
       len--;
   }
-
+  
   //encode the credentials
-  char *raw_auth = "";
+  char raw_auth[1024] = "";
   strcat(raw_auth, username);
   strcat(raw_auth, ":");
   strcat(raw_auth, password);
+  
   char *auth_str = base64Encoder(raw_auth);
 
   //formation of the GET request via. squid proxy
@@ -194,15 +199,16 @@ int receive_file(int socket, char* filename, char* web_url, char* img_url, char*
     fwrite(imagearray, 1, read_size, image);
     recv_size += read_size;
   } while (read_size > 0);
-
+  
   fclose(image);
-  puts("Image successfully Received!");
+  
+  puts("Data successfully Received!");
   return 1;
 }
 
 //driver code
 int main(int argc, char *argv[]) {
-
+  bool downloadLogo = false;
   char* web_url = "";
   char *proxy_ip = "";
   char *proxy_port = "";
@@ -217,10 +223,12 @@ int main(int argc, char *argv[]) {
   username = argv[4];
   password = argv[5];
   file_name = argv[6];
-  img_name = argv[7];
 
-  
-  bool downloadLogo = false;
+  if(argc == 8) {
+    downloadLogo = true;
+    img_name = argv[7];
+  }
+
   int socket_desc;
 
   struct sockaddr_in server;
@@ -242,13 +250,13 @@ int main(int argc, char *argv[]) {
   puts("Connected");
   
   receive_file(socket_desc, file_name, web_url, "", username, password);
-  /*
+  
   if(downloadLogo) {
-    char* img_url = get_logo_url();
+    char* img_url = get_logo_url(file_name);
+    //puts(img_url);
     receive_file(socket_desc, img_name, web_url, img_url, username, password);
   }
   
-  */
   close(socket_desc);
   
 
