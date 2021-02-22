@@ -1,18 +1,94 @@
 #include<stdio.h>
 #include<string.h>
+#include<stdlib.h>
 #include<sys/socket.h>
 #include<arpa/inet.h>
 #include <unistd.h>
+#define SIZE 1000 
+
+// Takes string to be encoded as input 
+// and its length and returns encoded string 
+char* base64Encoder(char input_str[]) 
+{ 
+    int len_str = strlen(input_str);
+	// Character set of base64 encoding scheme 
+	char char_set[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"; 
+	
+	// Resultant string 
+	char *res_str = (char *) malloc(SIZE * sizeof(char)); 
+	
+	int index, no_of_bits = 0, padding = 0, val = 0, count = 0, temp; 
+	int i, j, k = 0; 
+	
+	// Loop takes 3 characters at a time from 
+	// input_str and stores it in val 
+	for (i = 0; i < len_str; i += 3) 
+		{ 
+			val = 0, count = 0, no_of_bits = 0; 
+
+			for (j = i; j < len_str && j <= i + 2; j++) 
+			{ 
+				// binary data of input_str is stored in val 
+				val = val << 8; 
+				
+				// (A + 0 = A) stores character in val 
+				val = val | input_str[j]; 
+				
+				// calculates how many time loop 
+				// ran if "MEN" -> 3 otherwise "ON" -> 2 
+				count++; 
+			
+			} 
+
+			no_of_bits = count * 8; 
+
+			// calculates how many "=" to append after res_str. 
+			padding = no_of_bits % 3; 
+
+			// extracts all bits from val (6 at a time) 
+			// and find the value of each block 
+			while (no_of_bits != 0) 
+			{ 
+				// retrieve the value of each block 
+				if (no_of_bits >= 6) 
+				{ 
+					temp = no_of_bits - 6; 
+					
+					// binary of 63 is (111111) f 
+					index = (val >> temp) & 63; 
+					no_of_bits -= 6;		 
+				} 
+				else
+				{ 
+					temp = 6 - no_of_bits; 
+					
+					// append zeros to right if bits are less than 6 
+					index = (val << temp) & 63; 
+					no_of_bits = 0; 
+				} 
+				res_str[k++] = char_set[index]; 
+			} 
+	} 
+
+	// padding is done here 
+	for (i = 1; i <= padding; i++) 
+	{ 
+		res_str[k++] = '='; 
+	} 
+
+	res_str[k] = '\0'; 
+
+	return res_str; 
+
+} 
 
 // www.axmag.com/download/pdfurl-guide.pdf
 int main(int argc , char *argv[])
 {
     int socket_desc;
-
-    char *message;
     char server_reply[10000];
     char few_bytes[10000];
-    char *filename = "file.png";
+    char *filename = "file.html";
     int total_len = 0;
 
     int len;
@@ -27,9 +103,9 @@ int main(int argc , char *argv[])
         printf("Could not create socket");
     }
 
-    server.sin_addr.s_addr = inet_addr("164.100.150.76");
+    server.sin_addr.s_addr = inet_addr("182.75.45.22");
     server.sin_family = AF_INET;
-    server.sin_port = htons( 80 );
+    server.sin_port = htons( 13128 );
 
     //Connect to remote server
     if (connect(socket_desc , (struct sockaddr *)&server , sizeof(server)) < 0)
@@ -40,8 +116,17 @@ int main(int argc , char *argv[])
 
     puts("Connected\n");
 
+    //char auth_str[10241] = base64Encoder("csf303:csf303");
+    char auth_str[10241] = "Y3NmMzAzOmNzZjMwMw==";
+    //puts(auth_str);
     //Send request
-    message = "GET http://jandarshan.cg.nic.in/images/logo3.gif HTTP/1.0\r\nHost: jandarshan.cg.nic.in\r\n\r\n";
+    char message[10241] = "GET ";
+    strcat(message, "http://info.in2p3.fr");
+    strcat(message, " HTTP/1.1\r\nHost: ");
+    strcat(message, "info.in2p3.fr");
+    strcat(message, "\r\nProxy-Authorization: Basic ");
+    strcat(message, auth_str);
+    strcat(message, "\r\nConnection: close\r\n\r\n");
 
     if(send(socket_desc, message, strlen(message) , 0) < 0) {
         puts("Send failed");
@@ -59,7 +144,7 @@ int main(int argc , char *argv[])
 
     while (1)
     {
-        int received_len = recv(socket_desc, server_reply, sizeof (server_reply) , 0);
+        int received_len = recv(socket_desc, server_reply, sizeof (server_reply), 0);
 
         if (flag == 0) {
             int cnt = 0;
@@ -84,16 +169,16 @@ int main(int argc , char *argv[])
             printf("%s", server_reply);
             total_len += received_len;
 
-            printf("*********************** Header separated ***************************\n");
-            printf("\nreceived = %d\ncurrent img total = %d\n", received_len, total_len);
-            printf("Data : \n");
-            puts(few_bytes);
+            //printf("*********************** Header separated ***************************\n");
+            //printf("\nreceived = %d\ncurrent img total = %d\n", received_len, total_len);
+            //printf("Data : \n");
+            //puts(few_bytes);
         }
         else if(received_len) {
             total_len += received_len;
-            printf("\nreceived = %d\ncurrent img total = %d\n", received_len, total_len);
-            printf("Data : \n");
-            puts(server_reply);
+            //printf("\nreceived = %d\ncurrent img total = %d\n", received_len, total_len);
+            //printf("Data : \n");
+            //puts(server_reply);
             fwrite(server_reply, received_len, 1, file);
         }
 
