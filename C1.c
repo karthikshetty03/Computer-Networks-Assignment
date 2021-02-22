@@ -14,7 +14,6 @@ char* get_logo_url(char* filename) {
     fptr = fopen(filename, "r");
 
     while(fscanf(fptr, "%s", word) != EOF) {
-        puts(word);
         if(strlen(word) <= 6) {
             continue;
         }
@@ -29,15 +28,12 @@ char* get_logo_url(char* filename) {
         req[4] = '\0';
 
         if(strcmp(search_string, req) == 0) {
-            printf("**************FOUND*****************\n");
-            
             for(int i = 5; word[i]!='"'; i++)
                 url[cnt++] = word[i];
-                
+
             url[cnt] = '\0';
-            puts(url);
             fclose(fptr);
-            char* str = (char*)malloc(sizeof(char)*strlen(url));
+            char* str = (char*)malloc(sizeof(char)*10241);
             strcpy(str, url);
             return str;
         }
@@ -124,7 +120,10 @@ char* base64Encoder(char input_str[])
 int receive_file(int socket, char* filename, char* web_url, char* img_url, char* username, char* password)
 {
   int recv_size = 0, read_size, flag = 0, cnt = 0, in = 0;
-  char imagearray[10241], few_bytes[10241];
+  char *imagearray, *few_bytes;
+  imagearray = (char*)calloc(10241, sizeof(char));
+  few_bytes = (char*)calloc(10241, sizeof(char));
+
   FILE *image;
 
   //strip trailing slashes if any
@@ -152,6 +151,7 @@ int receive_file(int socket, char* filename, char* web_url, char* img_url, char*
   strcat(message, "\r\nProxy-Authorization: Basic ");
   strcat(message, auth_str);
   strcat(message, "\r\nConnection: close\r\n\r\n");
+  puts(message);
 
   if (send(socket, message , strlen(message) , 0) < 0) {
     puts("Send failed");
@@ -181,6 +181,7 @@ int receive_file(int socket, char* filename, char* web_url, char* img_url, char*
               if(imagearray[i+1] == '\n' && imagearray[i+2] == '\r' && imagearray[i+3] == '\n') {
                   in = 1;
                   i += 3;
+                  imagearray[i] = '\0';
               }
           }
           else if(in == 1) {
@@ -191,6 +192,7 @@ int receive_file(int socket, char* filename, char* web_url, char* img_url, char*
       few_bytes[cnt] = '\0';
       fwrite(few_bytes, 1, cnt, image);
       recv_size += read_size;
+      puts(imagearray);
       continue;
     }
 
@@ -200,10 +202,35 @@ int receive_file(int socket, char* filename, char* web_url, char* img_url, char*
     recv_size += read_size;
   } while (read_size > 0);
   
+  free(imagearray);
+  free(few_bytes);
   fclose(image);
-  
-  puts("Data successfully Received!");
+  puts("**************** Data successfully Received! *******************\n\n");
   return 1;
+}
+
+int sockeConnection(char* proxy_ip, char* proxy_port) {
+  int socket_desc;
+
+  struct sockaddr_in server;
+  socket_desc = socket(AF_INET , SOCK_STREAM , 0);
+
+  if (socket_desc == -1) {
+    printf("Could not create socket");
+  }
+
+  server.sin_addr.s_addr = inet_addr(proxy_ip);
+  server.sin_family = AF_INET;
+  server.sin_port = htons(atoi(proxy_port));
+  setsockopt(socket_desc, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
+
+  if (connect(socket_desc , (struct sockaddr *)&server , sizeof(server)) < 0) {
+    puts("connect error");
+    return 1;
+  }
+
+  puts("*********** Connected ************\n");
+  return socket_desc;
 }
 
 //driver code
@@ -229,36 +256,16 @@ int main(int argc, char *argv[]) {
     img_name = argv[7];
   }
 
-  int socket_desc;
-
-  struct sockaddr_in server;
-  socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-
-  if (socket_desc == -1) {
-    printf("Could not create socket");
-  }
-
-  server.sin_addr.s_addr = inet_addr(proxy_ip);
-  server.sin_family = AF_INET;
-  server.sin_port = htons(atoi(proxy_port));
-
-  if (connect(socket_desc , (struct sockaddr *)&server , sizeof(server)) < 0) {
-    puts("connect error");
-    return 1;
-  }
-
-  puts("Connected");
-  
+  int socket_desc = sockeConnection(proxy_ip, proxy_port);
   receive_file(socket_desc, file_name, web_url, "", username, password);
-  
+  close(socket_desc);
+
   if(downloadLogo) {
+    socket_desc = sockeConnection(proxy_ip, proxy_port);
     char* img_url = get_logo_url(file_name);
-    //puts(img_url);
     receive_file(socket_desc, img_name, web_url, img_url, username, password);
+    close(socket_desc);
   }
   
-  close(socket_desc);
-  
-
   return 0;
 }

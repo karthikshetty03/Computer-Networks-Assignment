@@ -12,7 +12,7 @@ char* get_logo_url() {
     char word[10241];
 
     FILE *fptr;
-    fptr = fopen("file.html", "r");
+    fptr = fopen("index.html", "r");
 
     while(fscanf(fptr, "%s", word) != EOF) {
         //puts(word);
@@ -157,7 +157,7 @@ int main(int argc , char *argv[])
     }
 
     puts("Connected\n");
-    char *web_url = "http://info.in2p3.fr";
+    char *web_url = "info.in2p3.fr";
 
     int endlen = strlen(web_url);
     endlen--;
@@ -188,6 +188,7 @@ int main(int argc , char *argv[])
     strcat(message, "\r\nProxy-Authorization: Basic ");
     strcat(message, auth_str);
     strcat(message, "\r\nConnection: close\r\n\r\n");
+    puts(message);
 
     if(send(socket_desc, message, strlen(message) , 0) < 0) {
         puts("Send failed");
