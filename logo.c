@@ -88,7 +88,9 @@ int main(int argc , char *argv[])
     int socket_desc;
     char server_reply[10000];
     char few_bytes[10000];
-    char *filename = "file.html";
+    //char *filename = "file.html";
+    char *filename = "file.gif";
+
     int total_len = 0;
 
     int len;
@@ -116,12 +118,13 @@ int main(int argc , char *argv[])
 
     puts("Connected\n");
 
-    //char auth_str[10241] = base64Encoder("csf303:csf303");
-    char auth_str[10241] = "Y3NmMzAzOmNzZjMwMw==";
+    char *auth_str = base64Encoder("csf303:csf303");
+    //char auth_str[10241] = "Y3NmMzAzOmNzZjMwMw==";
     //puts(auth_str);
     //Send request
     char message[10241] = "GET ";
-    strcat(message, "http://info.in2p3.fr");
+    strcat(message, "http://info.in2p3.fr/cc.gif");
+    //strcat(message, "http://info.in2p3.fr");
     strcat(message, " HTTP/1.1\r\nHost: ");
     strcat(message, "info.in2p3.fr");
     strcat(message, "\r\nProxy-Authorization: Basic ");
