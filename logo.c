@@ -7,6 +7,44 @@
 
 // Takes string to be encoded as input 
 // and its length and returns encoded string 
+char* get_logo_url() {
+    char search_string[10241] = "SRC=";
+    char word[10241];
+
+    FILE *fptr;
+    fptr = fopen("file.html", "r");
+
+    while(fscanf(fptr, "%s", word) != EOF) {
+        //puts(word);
+        if(strlen(word) <= 6) {
+            continue;
+        }
+
+        char req[10241];
+        char url[10241];
+        int cnt = 0;
+        for(int i = 0; i < 4; i++) 
+            req[i] = word[i];
+        req[4] = '\0';
+
+        if(strcmp(search_string, req) == 0) {
+            printf("**************FOUND*****************\n");
+            
+            for(int i = 5; word[i]!='"'; i++)
+                url[cnt++] = word[i];
+
+            //puts(url);
+            fclose(fptr);
+            char* str = (char*)malloc(sizeof(char)*strlen(url));
+            strcpy(str, url);
+            return str;
+        }
+    }
+
+    fclose(fptr);
+    return "";
+}
+
 char* base64Encoder(char input_str[]) 
 { 
     int len_str = strlen(input_str);
@@ -118,20 +156,41 @@ int main(int argc , char *argv[])
     }
 
     puts("Connected\n");
+    char *web_url = "http://info.in2p3.fr";
+
+    int endlen = strlen(web_url);
+    endlen--;
+
+    while(web_url[endlen] == '/') {
+        web_url[endlen] = '\0';
+        endlen--;
+    }
+
+    char host_url[10241];
+    int brk = 0;
+    for(int i = 6; i < strlen(web_url); i++) 
+        host_url[brk++] = web_url[i];
+
+    host_url[brk] = '\0';
 
     char *auth_str = base64Encoder("csf303:csf303");
     //char auth_str[10241] = "Y3NmMzAzOmNzZjMwMw==";
     //puts(auth_str);
     //Send request
+    
     char message[10241] = "GET ";
-    strcat(message, "http://info.in2p3.fr/cc.gif");
+    strcat(message, web_url);
+    strcat(message, "/");
+    char* img_url = get_logo_url();
+    puts(img_url);
+    strcat(message,  img_url);
     //strcat(message, "http://go.com");
     //strcat(message, "http://lumiere-a.akamaihd.net/v1/images/shopdisney-logo-desktop_1f595224.jpeg?region=0,0,1536,300");
     //strcat(message, "http://info.in2p3.fr");
     strcat(message, " HTTP/1.1\r\nHost: ");
-    strcat(message, "info.in2p3.fr");
+    strcat(message, host_url);
     //strcat(message, "lumiere-a.akamaihd.net");
-    strcat(message, "go.com");
+    //strcat(message, "go.com");
     strcat(message, "\r\nProxy-Authorization: Basic ");
     strcat(message, auth_str);
     strcat(message, "\r\nConnection: close\r\n\r\n");
@@ -142,7 +201,7 @@ int main(int argc , char *argv[])
     }
 
     remove(filename);
-    file = fopen(filename, "wb");
+    file = fopen(filename, "w");
 
     if (file == NULL) {
         printf("File could not opened");
@@ -200,6 +259,5 @@ int main(int argc , char *argv[])
     puts("\n***************** Complete Data recieved *******************************");
 
     fclose(file);
-
     return 0;
 }
