@@ -122,6 +122,7 @@ char* base64Encoder(char input_str[])
 // www.axmag.com/download/pdfurl-guide.pdf
 int main(int argc , char *argv[])
 {
+    
     int socket_desc;
     char server_reply[10000];
     char few_bytes[10000];

@@ -1,24 +1,153 @@
 #include<stdio.h>
 #include<string.h>
+#include<stdlib.h>
 #include<sys/socket.h>
 #include<arpa/inet.h>
-#include<sys/ioctl.h>
-#include<unistd.h>
+#include <unistd.h>
+#include<stdbool.h>
+
+char* get_logo_url() {
+    char search_string[10241] = "SRC=";
+    char word[10241];
+
+    FILE *fptr;
+    fptr = fopen("file.html", "r");
+
+    while(fscanf(fptr, "%s", word) != EOF) {
+        if(strlen(word) <= 6) {
+            continue;
+        }
+
+        char req[10241];
+        char url[10241];
+        int cnt = 0;
+
+        for(int i = 0; i < 4; i++) 
+            req[i] = word[i];
+
+        req[4] = '\0';
+
+        if(strcmp(search_string, req) == 0) {
+            for(int i = 5; word[i]!='"'; i++)
+                url[cnt++] = word[i];
+
+            fclose(fptr);
+            char* str = (char*)malloc(sizeof(char)*strlen(url));
+            strcpy(str, url);
+            return str;
+        }
+    }
+
+    fclose(fptr);
+    return "";
+}
+
+// Takes string to be encoded as input 
+// and its length and returns encoded string 
+char* base64Encoder(char input_str[]) 
+{ 
+    int len_str = strlen(input_str);
+	// Character set of base64 encoding scheme 
+	char char_set[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"; 
+	
+	// Resultant string 
+	char *res_str = (char *) malloc(10241 * sizeof(char)); 
+	
+	int index, no_of_bits = 0, padding = 0, val = 0, count = 0, temp; 
+	int i, j, k = 0; 
+	
+	// Loop takes 3 characters at a time from 
+	// input_str and stores it in val 
+	for (i = 0; i < len_str; i += 3) 
+		{ 
+			val = 0, count = 0, no_of_bits = 0; 
+
+			for (j = i; j < len_str && j <= i + 2; j++) 
+			{ 
+				// binary data of input_str is stored in val 
+				val = val << 8; 
+				
+				// (A + 0 = A) stores character in val 
+				val = val | input_str[j]; 
+				
+				// calculates how many time loop 
+				// ran if "MEN" -> 3 otherwise "ON" -> 2 
+				count++; 
+			
+			} 
+
+			no_of_bits = count * 8; 
+
+			// calculates how many "=" to append after res_str. 
+			padding = no_of_bits % 3; 
+
+			// extracts all bits from val (6 at a time) 
+			// and find the value of each block 
+			while (no_of_bits != 0) 
+			{ 
+				// retrieve the value of each block 
+				if (no_of_bits >= 6) 
+				{ 
+					temp = no_of_bits - 6; 
+					
+					// binary of 63 is (111111) f 
+					index = (val >> temp) & 63; 
+					no_of_bits -= 6;		 
+				} 
+				else
+				{ 
+					temp = 6 - no_of_bits; 
+					
+					// append zeros to right if bits are less than 6 
+					index = (val << temp) & 63; 
+					no_of_bits = 0; 
+				} 
+				res_str[k++] = char_set[index]; 
+			} 
+	} 
+
+	// padding is done here 
+	for (i = 1; i <= padding; i++) 
+		res_str[k++] = '='; 
+
+	res_str[k] = '\0'; 
+
+	return res_str; 
+}
 
 //download logo
-int receive_image(int socket)
+int receive_file(int socket, char* filename, char* web_url, char* img_url, char* username, char* password)
 {
   int recv_size = 0, read_size, flag = 0, cnt = 0, in = 0;
-  char *filename = "capture.png";
-  //char *filename = "capture.jpeg";
   char imagearray[10241], few_bytes[10241];
   FILE *image;
 
-  //send request to remote server
-  char*  message = "GET http://jandarshan.cg.nic.in/images/logo3.gif HTTP/1.0\r\nHost: jandarshan.cg.nic.in\r\n\r\n";
-  /*
-  char* message = "GET /images/branding/googlelogo/1x/googlelogo_color_272x92dp.png HTTP/1.0\r\nHost: www.google.com\r\n\r\n";
-  */
+  
+  //strip trailing slashes if any
+  int len = strlen(web_url);
+  while(web_url[len] == '/') {
+      web_url[len] = '\0';
+      len--;
+  }
+
+  //encode the credentials
+  char *raw_auth = "";
+  strcat(raw_auth, username);
+  strcat(raw_auth, ":");
+  strcat(raw_auth, password);
+  char *auth_str = base64Encoder(raw_auth);
+
+  //formation of the GET request via. squid proxy
+  char message[10241] = "GET http://";
+  strcat(message, web_url);
+  strcat(message, "/");
+  strcat(message,  img_url);
+  strcat(message, " HTTP/1.1\r\nHost: ");
+  strcat(message, web_url);
+  strcat(message, "\r\nProxy-Authorization: Basic ");
+  strcat(message, auth_str);
+  strcat(message, "\r\nConnection: close\r\n\r\n");
+
   if (send(socket, message , strlen(message) , 0) < 0) {
     puts("Send failed");
     return 1;
@@ -71,21 +200,29 @@ int receive_image(int socket)
   return 1;
 }
 
-//download website
-int recieve_website(int socket) {
-  
-}
-
-
-
-
-
-
-
 //driver code
 int main(int argc, char *argv[]) {
+
+  char* web_url = "";
+  char *proxy_ip = "";
+  char *proxy_port = "";
+  char* username = "";
+  char* password = "";
+  char* file_name = "";
+  char* img_name = "";
+
+  web_url = argv[1];
+  proxy_ip = argv[2];
+  proxy_port = argv[3];
+  username = argv[4];
+  password = argv[5];
+  file_name = argv[6];
+  img_name = argv[7];
+
   
+  bool downloadLogo = false;
   int socket_desc;
+
   struct sockaddr_in server;
   socket_desc = socket(AF_INET , SOCK_STREAM , 0);
 
@@ -93,12 +230,9 @@ int main(int argc, char *argv[]) {
     printf("Could not create socket");
   }
 
-  //server.sin_addr.s_addr = inet_addr("142.250.80.14");
-  //server.sin_addr.s_addr = inet_addr("104.126.116.211");
-  server.sin_addr.s_addr = inet_addr("164.100.150.76");
-
+  server.sin_addr.s_addr = inet_addr(proxy_ip);
   server.sin_family = AF_INET;
-  server.sin_port = htons( 80 );
+  server.sin_port = htons(atoi(proxy_port));
 
   if (connect(socket_desc , (struct sockaddr *)&server , sizeof(server)) < 0) {
     puts("connect error");
@@ -106,8 +240,17 @@ int main(int argc, char *argv[]) {
   }
 
   puts("Connected");
-  receive_image(socket_desc);
+  
+  receive_file(socket_desc, file_name, web_url, "", username, password);
+  /*
+  if(downloadLogo) {
+    char* img_url = get_logo_url();
+    receive_file(socket_desc, img_name, web_url, img_url, username, password);
+  }
+  
+  */
   close(socket_desc);
+  
 
   return 0;
 }
