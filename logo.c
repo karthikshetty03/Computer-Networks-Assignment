@@ -4,7 +4,6 @@
 #include<sys/socket.h>
 #include<arpa/inet.h>
 #include <unistd.h>
-#define SIZE 1000 
 
 // Takes string to be encoded as input 
 // and its length and returns encoded string 
@@ -15,7 +14,7 @@ char* base64Encoder(char input_str[])
 	char char_set[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"; 
 	
 	// Resultant string 
-	char *res_str = (char *) malloc(SIZE * sizeof(char)); 
+	char *res_str = (char *) malloc(10241 * sizeof(char)); 
 	
 	int index, no_of_bits = 0, padding = 0, val = 0, count = 0, temp; 
 	int i, j, k = 0; 
@@ -90,6 +89,8 @@ int main(int argc , char *argv[])
     char few_bytes[10000];
     //char *filename = "file.html";
     char *filename = "file.gif";
+    //char *filename = "file.png";
+
 
     int total_len = 0;
 
@@ -124,9 +125,13 @@ int main(int argc , char *argv[])
     //Send request
     char message[10241] = "GET ";
     strcat(message, "http://info.in2p3.fr/cc.gif");
+    //strcat(message, "http://go.com");
+    //strcat(message, "http://lumiere-a.akamaihd.net/v1/images/shopdisney-logo-desktop_1f595224.jpeg?region=0,0,1536,300");
     //strcat(message, "http://info.in2p3.fr");
     strcat(message, " HTTP/1.1\r\nHost: ");
     strcat(message, "info.in2p3.fr");
+    //strcat(message, "lumiere-a.akamaihd.net");
+    strcat(message, "go.com");
     strcat(message, "\r\nProxy-Authorization: Basic ");
     strcat(message, auth_str);
     strcat(message, "\r\nConnection: close\r\n\r\n");
