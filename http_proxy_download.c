@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #define ll long long
-#define SIZE 10241
+#define SIZE 21096
 
 char ref[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *leftData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData, *query, *comp, *redirectURL;
@@ -32,6 +32,7 @@ void allocAll(ll val, char **a)
     userID = a[4];
     userPassword = a[5];
     webName = a[6];
+
     if (val == 8)
     {
         if(!strcmp(websiteURL, "info.in2p3.fr/"))
@@ -67,7 +68,7 @@ char *imgPath()
 
     if (fileptr == NULL)
     {
-        printf("Error has occurred. File could not be opened\n");
+        printf("Error !\n");
         return ans;
     }
 
@@ -372,6 +373,7 @@ int32_t main(int argc, char **argv)
             close(socket2);
             return 0;
         }
+        
         close(socket2);
     }
 }
