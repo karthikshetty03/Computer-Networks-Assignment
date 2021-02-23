@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -10,11 +9,10 @@
 #define SIZE 10241
 
 char ref[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
 char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *imgData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData;
 
 bool shoudlDownload = false, part2 = false;
- 
+
 void initAll()
 {
     websiteURL = (char *)calloc(SIZE, sizeof(char));
@@ -41,7 +39,7 @@ void allocAll(ll val, char **a)
     }
 }
 
-void *eliminateTrailingHash()
+void eliminateTrailingHash()
 {
     ll length = strlen(websiteURL);
     while (websiteURL[length] == '/')
@@ -57,6 +55,37 @@ void combineAuth()
     strcat(rawCredentials, userID);
     strcat(rawCredentials, ":");
     strcat(rawCredentials, userPassword);
+}
+
+bool redirectionCheck()
+{
+    ll idx = 0;
+    char *temp = (char *)calloc(SIZE, sizeof(char));
+
+    for (ll i = 0; i < strlen(headerData); i++)
+    {
+        if (headerData[i] == '\r')
+        {
+            idx = i;
+            break;
+        }
+
+        temp[i] = headerData[i];
+    }
+
+    temp[idx] = '\0';
+    char *token = strtok(temp, " ");
+    token = strtok(NULL, " ");
+
+    if (!strcmp(token, "200"))
+        return false;
+
+    if (token[0] != '3')
+        return false;
+
+    websiteURL = (char *)calloc(SIZE, sizeof(char));
+    strcpy(websiteURL, "go.com");
+    return true;
 }
 
 char *imgPath()
@@ -187,7 +216,7 @@ ll ConnectToSock()
     server.sin_addr.s_addr = inet_addr(proxyIP);
     server.sin_family = AF_INET;
     server.sin_port = htons(atoi(proxyPort));
-    setsockopt(socket_id, SOL_SOCKET, SO_REUSEADDR, &(ll){1}, sizeof(int));
+    //setsockopt(socket_id, SOL_SOCKET, SO_REUSEADDR, &(ll){1}, sizeof(int));
 
     if (connect(socket_id, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
@@ -234,7 +263,7 @@ ll separateHeaders(ll readLen)
     return idx;
 }
 
-int downloadContent(ll socket_id, char *fileName)
+ll downloadContent(ll socket_id, char *fileName)
 {
     ll recievedLen = 0, readLen = 0, f = 0, idx;
     buffer = (char *)calloc(SIZE, sizeof(char));
@@ -266,6 +295,21 @@ int downloadContent(ll socket_id, char *fileName)
             f = 1;
             idx = separateHeaders(readLen);
             fwrite(imgData, 1, idx, fileptr);
+
+            if (!part2)
+            {
+                bool redirect = redirectionCheck();
+
+                if (redirect)
+                {
+                    printf("Redirecting, Please Wait.......\n\n");
+                    close(socket_id);
+                    ll new_socket_id = ConnectToSock();
+                    downloadContent(new_socket_id, fileName);
+                    return 0;
+                }
+            }
+
             printf("%s\n", buffer);
         }
         else
@@ -274,8 +318,6 @@ int downloadContent(ll socket_id, char *fileName)
         }
     } while (readLen > 0);
 
-    free(imgData);
-    free(buffer);
     fclose(fileptr);
     printf("Data recieved successfully !\n\n");
     return 0;
@@ -316,7 +358,6 @@ int32_t main(int argc, char **argv)
             close(socket2);
             return 0;
         }
-        
         close(socket2);
     }
 }
