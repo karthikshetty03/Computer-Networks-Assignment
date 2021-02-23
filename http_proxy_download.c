@@ -34,7 +34,8 @@ void allocAll(ll val, char **a)
     webName = a[6];
     if (val == 8)
     {
-        shoudlDownload = true;
+        if(!strcmp(websiteURL, "info.in2p3.fr/"))
+            shoudlDownload = true;
         imgName = a[7];
     }
 }
