@@ -9,7 +9,7 @@
 #define SIZE 10241
 
 char ref[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *imgData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData, *query, *comp;
+char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *leftData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData, *query, *comp;
 
 bool shoudlDownload = false, part2 = false;
 
@@ -59,49 +59,60 @@ void combineAuth()
 
 char *imgPath()
 {
-    char *comp = (char *)calloc(SIZE, sizeof(char));
     char *ans = (char *)calloc(SIZE, sizeof(char));
 
-    FILE *fileptr;
-    fileptr = fopen(webName, "r");
-
-    if (fileptr == NULL)
+    if (!strcmp(query, "SRC="))
     {
-        printf("Error has occurred. File could not be opened\n");
-        return ans;
-    }
+        char *comp = (char *)calloc(SIZE, sizeof(char));
+        FILE *fileptr;
+        fileptr = fopen(webName, "r");
 
-    while (fscanf(fileptr, "%s", comp) != EOF)
-    {
-        ll len = strlen(comp);
-
-        if (len <= strlen(query + 2))
-            continue;
-
-        printf("query : %s\n", comp);
-
-        char inp[SIZE], otp[SIZE];
-        ll idx = 0;
-        strcpy(inp, comp);
-        inp[4] = '\0';
-
-        if (!strcmp(query, inp))
+        if (fileptr == NULL)
         {
-            for (ll i = strlen(query) + 1; comp[i] != '"'; i++)
-            {
-                otp[idx] = comp[i];
-                idx += 1;
-            }
-
-            otp[idx] = '\0';
-            strcpy(ans, otp);
-            fclose(fileptr);
+            printf("Error has occurred. File could not be opened\n");
             return ans;
         }
-    }
 
-    fclose(fileptr);
-    return ans;
+        while (fscanf(fileptr, "%s", comp) != EOF)
+        {
+            ll len = strlen(comp);
+
+            if (len <= strlen(query + 2))
+                continue;
+
+            char inp[SIZE], otp[SIZE];
+            ll idx = 0;
+            strcpy(inp, comp);
+            inp[4] = '\0';
+
+            if (!strcmp(query, inp))
+            {
+                for (ll i = strlen(query) + 1; comp[i] != '"'; i++)
+                {
+                    otp[idx] = comp[i];
+                    idx += 1;
+                }
+
+                otp[idx] = '\0';
+                strcpy(ans, otp);
+                fclose(fileptr);
+                return ans;
+            }
+        }
+        fclose(fileptr);
+        return ans;
+    }
+    else
+    {
+        char *str = strstr(leftData, query);
+        str = strstr(str, ".");
+        ll idx = 0;
+
+        for (int i = 1; str[i] != '"'; i++)
+            ans[idx++] = str[i];
+
+        return ans;
+    }
 }
 
 bool redirectionCheck()
@@ -135,9 +146,8 @@ bool redirectionCheck()
     strcat(query, "HREF=");
     char *redirectURL = imgPath();
     printf("Redirect to : %s\n", redirectURL);
-    strcpy(websiteURL, "go.com");
-
-    return false;
+    strcpy(websiteURL, redirectURL);
+    return true;
 }
 
 int getRequest(ll socket_id)
@@ -261,14 +271,14 @@ ll separateHeaders(ll readLen)
         }
         else
         {
-            imgData[idx] = buffer[i];
+            leftData[idx] = buffer[i];
             idx += 1;
         }
     }
 
     headerData = (char *)calloc(SIZE, sizeof(char));
     strcpy(headerData, buffer);
-    imgData[idx] = '\0';
+    leftData[idx] = '\0';
     return idx;
 }
 
@@ -276,7 +286,7 @@ ll downloadContent(ll socket_id, char *fileName)
 {
     ll recievedLen = 0, readLen = 0, f = 0, idx;
     buffer = (char *)calloc(SIZE, sizeof(char));
-    imgData = (char *)calloc(SIZE, sizeof(char));
+    leftData = (char *)calloc(SIZE, sizeof(char));
 
     eliminateTrailingHash();
     combineAuth();
@@ -303,7 +313,8 @@ ll downloadContent(ll socket_id, char *fileName)
         {
             f = 1;
             idx = separateHeaders(readLen);
-            fwrite(imgData, 1, idx, fileptr);
+            printf("%s\n", buffer);
+            fwrite(leftData, 1, idx, fileptr);
 
             if (!part2)
             {
@@ -318,8 +329,6 @@ ll downloadContent(ll socket_id, char *fileName)
                     return 0;
                 }
             }
-
-            printf("%s\n", buffer);
         }
         else
         {
