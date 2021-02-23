@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include<stdbool.h>
 
+//find url of logo in index.html
 char* get_logo_url(char* filename) {
     char search_string[10241] = "SRC=";
     char word[10241];
@@ -20,6 +21,7 @@ char* get_logo_url(char* filename) {
 
         char req[10241];
         char url[10241];
+        
         int cnt = 0;
 
         for(int i = 0; i < 4; i++) 
@@ -116,15 +118,14 @@ char* base64Encoder(char input_str[])
 	return res_str; 
 }
 
-//download logo
+//download required file
 int receive_file(int socket, char* filename, char* web_url, char* img_url, char* username, char* password)
 {
   int recv_size = 0, read_size, flag = 0, cnt = 0, in = 0;
-  char *imagearray, *few_bytes;
-  imagearray = (char*)calloc(10241, sizeof(char));
-  few_bytes = (char*)calloc(10241, sizeof(char));
+  char *buffer, *few_bytes;
 
-  FILE *image;
+  buffer = (char*)calloc(10241, sizeof(char));
+  few_bytes = (char*)calloc(10241, sizeof(char));
 
   //strip trailing slashes if any
   int len = strlen(web_url);
@@ -159,9 +160,9 @@ int receive_file(int socket, char* filename, char* web_url, char* img_url, char*
   }
 
   remove(filename);
-  image = fopen(filename, "w");
+  FILE* file = fopen(filename, "w");
 
-  if (image == NULL) {
+  if (file == NULL) {
     printf("Error has occurred. Image file could not be opened\n");
     return -1;
   }
@@ -171,40 +172,40 @@ int receive_file(int socket, char* filename, char* web_url, char* img_url, char*
     //first chunk of response, so need to separate the headers
     if (flag == 0) {
       flag = 1;
-      read_size = read(socket, imagearray, 10241);
+      read_size = read(socket, buffer, 10241);
 
       for(int i = 0; i < read_size; i++) {
-          if(in == 0 && imagearray[i] != '\r') {
+          if(in == 0 && buffer[i] != '\r') {
               continue;
           }
-          else if(in == 0 && imagearray[i] == '\r') {
-              if(imagearray[i+1] == '\n' && imagearray[i+2] == '\r' && imagearray[i+3] == '\n') {
+          else if(in == 0 && buffer[i] == '\r') {
+              if(buffer[i+1] == '\n' && buffer[i+2] == '\r' && buffer[i+3] == '\n') {
                   in = 1;
                   i += 3;
-                  imagearray[i] = '\0';
+                  buffer[i] = '\0';
               }
           }
           else if(in == 1) {
-              few_bytes[cnt++] = imagearray[i];
+              few_bytes[cnt++] = buffer[i];
           }
       }
 
       few_bytes[cnt] = '\0';
-      fwrite(few_bytes, 1, cnt, image);
+      fwrite(few_bytes, 1, cnt, file);
       recv_size += read_size;
-      puts(imagearray);
+      puts(buffer);
       continue;
     }
 
     //subsequent chunks of data
-    read_size = read(socket, imagearray, 10241);
-    fwrite(imagearray, 1, read_size, image);
+    read_size = read(socket, buffer, 10241);
+    fwrite(buffer, 1, read_size, file);
     recv_size += read_size;
   } while (read_size > 0);
   
-  free(imagearray);
+  free(buffer);
   free(few_bytes);
-  fclose(image);
+  fclose(file);
   puts("**************** Data successfully Received! *******************\n\n");
   return 1;
 }
