@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -10,11 +9,10 @@
 #define SIZE 10241
 
 char ref[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *imgData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData;
+char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *leftData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData, *query, *comp;
 
 bool shoudlDownload = false, part2 = false;
- 
+
 void initAll()
 {
     websiteURL = (char *)calloc(SIZE, sizeof(char));
@@ -41,9 +39,10 @@ void allocAll(ll val, char **a)
     }
 }
 
-void *eliminateTrailingHash()
+void eliminateTrailingHash()
 {
     ll length = strlen(websiteURL);
+    length--;
     while (websiteURL[length] == '/')
     {
         websiteURL[length] = '\0';
@@ -61,47 +60,107 @@ void combineAuth()
 
 char *imgPath()
 {
-    char query[SIZE] = "SRC=", comp[SIZE];
     char *ans = (char *)calloc(SIZE, sizeof(char));
 
-    FILE *fileptr;
-    fileptr = fopen(webName, "r");
-
-    if (fileptr == NULL)
+    if (!strcmp(query, "SRC="))
     {
-        printf("Error has occurred. File could not be opened\n");
-        return ans;
-    }
+        char *comp = (char *)calloc(SIZE, sizeof(char));
+        FILE *fileptr;
+        fileptr = fopen(webName, "r");
 
-    while (fscanf(fileptr, "%s", comp) != EOF)
-    {
-        ll l = strlen(comp);
-
-        if (l <= 6)
-            continue;
-
-        char inp[SIZE], otp[SIZE];
-        ll idx = 0;
-        strcpy(inp, comp);
-        inp[4] = '\0';
-
-        if (!strcmp(query, inp))
+        if (fileptr == NULL)
         {
-            for (ll i = 5; comp[i] != '"'; i++)
-            {
-                otp[idx] = comp[i];
-                idx += 1;
-            }
-
-            otp[idx] = '\0';
-            strcpy(ans, otp);
-            fclose(fileptr);
+            printf("Error has occurred. File could not be opened\n");
             return ans;
         }
+
+        while (fscanf(fileptr, "%s", comp) != EOF)
+        {
+            ll len = strlen(comp);
+
+            if (len <= strlen(query + 2))
+                continue;
+
+            char inp[SIZE], otp[SIZE];
+            ll idx = 0;
+            strcpy(inp, comp);
+            inp[4] = '\0';
+
+            if (!strcmp(query, inp))
+            {
+                for (ll i = strlen(query) + 1; comp[i] != '"'; i++)
+                {
+                    otp[idx] = comp[i];
+                    idx += 1;
+                }
+
+                otp[idx] = '\0';
+                strcpy(ans, otp);
+                fclose(fileptr);
+                return ans;
+            }
+        }
+        fclose(fileptr);
+        return ans;
+    }
+    else
+    {
+        char *str = strstr(leftData, query);
+
+        if (str == NULL || !strlen(str))
+            return ans;
+
+        str = strstr(str, "//");
+
+        if (str == "NULL" || !strlen(str))
+            return ans;
+
+        ll idx = 0;
+
+        for (int i = 2; str[i] != '"'; i++)
+            ans[idx++] = str[i];
+
+        return ans;
+    }
+}
+
+bool redirectionCheck()
+{
+    ll idx = 0;
+    char *temp = (char *)calloc(SIZE, sizeof(char));
+
+    for (ll i = 0; i < strlen(headerData); i++)
+    {
+        if (headerData[i] == '\r')
+        {
+            idx = i;
+            break;
+        }
+
+        temp[i] = headerData[i];
     }
 
-    fclose(fileptr);
-    return ans;
+    temp[idx] = '\0';
+    char *token = strtok(temp, " ");
+    token = strtok(NULL, " ");
+
+    if (!strcmp(token, "200"))
+        return false;
+
+    if (token[0] != '3')
+        return false;
+
+    websiteURL = (char *)calloc(SIZE, sizeof(char));
+    query = (char *)calloc(SIZE, sizeof(char));
+    strcat(query, "HREF=");
+    char *redirectURL = imgPath();
+
+    if (!strlen(redirectURL))
+        return false;
+
+    printf("Redirect to : %s\n", redirectURL);
+    strcpy(websiteURL, redirectURL);
+    return true;
 }
 
 int getRequest(ll socket_id)
@@ -113,6 +172,8 @@ int getRequest(ll socket_id)
 
     if (part2)
     {
+        query = (char *)calloc(SIZE, sizeof(char));
+        strcat(query, "SRC=");
         imgURL = imgPath();
         strcat(requestHeader, imgURL);
     }
@@ -223,22 +284,22 @@ ll separateHeaders(ll readLen)
         }
         else
         {
-            imgData[idx] = buffer[i];
+            leftData[idx] = buffer[i];
             idx += 1;
         }
     }
 
     headerData = (char *)calloc(SIZE, sizeof(char));
     strcpy(headerData, buffer);
-    imgData[idx] = '\0';
+    leftData[idx] = '\0';
     return idx;
 }
 
-int downloadContent(ll socket_id, char *fileName)
+ll downloadContent(ll socket_id, char *fileName)
 {
     ll recievedLen = 0, readLen = 0, f = 0, idx;
     buffer = (char *)calloc(SIZE, sizeof(char));
-    imgData = (char *)calloc(SIZE, sizeof(char));
+    leftData = (char *)calloc(SIZE, sizeof(char));
 
     eliminateTrailingHash();
     combineAuth();
@@ -265,8 +326,8 @@ int downloadContent(ll socket_id, char *fileName)
         {
             f = 1;
             idx = separateHeaders(readLen);
-            fwrite(imgData, 1, idx, fileptr);
             printf("%s\n", buffer);
+            fwrite(leftData, 1, idx, fileptr);
         }
         else
         {
@@ -274,10 +335,23 @@ int downloadContent(ll socket_id, char *fileName)
         }
     } while (readLen > 0);
 
-    free(imgData);
-    free(buffer);
     fclose(fileptr);
     printf("Data recieved successfully !\n\n");
+
+    if (!part2)
+    {
+        bool redirect = redirectionCheck();
+
+        if (redirect)
+        {
+            printf("Redirecting, Please Wait.......\n\n");
+            close(socket_id);
+            ll new_socket_id = ConnectToSock();
+            downloadContent(new_socket_id, fileName);
+            return 0;
+        }
+    }
+
     return 0;
 }
 
@@ -316,7 +390,6 @@ int32_t main(int argc, char **argv)
             close(socket2);
             return 0;
         }
-        
         close(socket2);
     }
 }
