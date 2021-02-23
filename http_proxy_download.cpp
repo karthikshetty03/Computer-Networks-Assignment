@@ -105,15 +105,14 @@ char *imgPath()
     }
     else
     {
-        char *str = (char *)calloc(SIZE, sizeof(char));
-        strcat(str, strstr(leftData, query));
+        char *str = strstr(leftData, query);
 
-        if (!strcmp(str, "\0"))
+        if (str == NULL or !strlen(str))
             return ans;
 
-        strcpy(str, strstr(str, "//"));
+        str = strstr(str, "//");
 
-        if (!strcmp(str, "\0"))
+        if (str == "NULL" or !strlen(str))
             return ans;
 
         ll idx = 0;
@@ -155,6 +154,10 @@ bool redirectionCheck()
     query = (char *)calloc(SIZE, sizeof(char));
     strcat(query, "HREF=");
     char *redirectURL = imgPath();
+
+    if (!strlen(redirectURL))
+        return false;
+
     printf("Redirect to : %s\n", redirectURL);
     strcpy(websiteURL, redirectURL);
     return true;
