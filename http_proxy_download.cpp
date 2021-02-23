@@ -9,7 +9,7 @@
 #define SIZE 10241
 
 char ref[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *imgData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData;
+char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *imgData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData, *query, *comp;
 
 bool shoudlDownload = false, part2 = false;
 
@@ -57,6 +57,53 @@ void combineAuth()
     strcat(rawCredentials, userPassword);
 }
 
+char *imgPath()
+{
+    char *comp = (char *)calloc(SIZE, sizeof(char));
+    char *ans = (char *)calloc(SIZE, sizeof(char));
+
+    FILE *fileptr;
+    fileptr = fopen(webName, "r");
+
+    if (fileptr == NULL)
+    {
+        printf("Error has occurred. File could not be opened\n");
+        return ans;
+    }
+
+    while (fscanf(fileptr, "%s", comp) != EOF)
+    {
+        ll len = strlen(comp);
+
+        if (len <= strlen(query + 2))
+            continue;
+
+        printf("query : %s\n", comp);
+
+        char inp[SIZE], otp[SIZE];
+        ll idx = 0;
+        strcpy(inp, comp);
+        inp[4] = '\0';
+
+        if (!strcmp(query, inp))
+        {
+            for (ll i = strlen(query) + 1; comp[i] != '"'; i++)
+            {
+                otp[idx] = comp[i];
+                idx += 1;
+            }
+
+            otp[idx] = '\0';
+            strcpy(ans, otp);
+            fclose(fileptr);
+            return ans;
+        }
+    }
+
+    fclose(fileptr);
+    return ans;
+}
+
 bool redirectionCheck()
 {
     ll idx = 0;
@@ -84,53 +131,13 @@ bool redirectionCheck()
         return false;
 
     websiteURL = (char *)calloc(SIZE, sizeof(char));
+    query = (char *)calloc(SIZE, sizeof(char));
+    strcat(query, "HREF=");
+    char *redirectURL = imgPath();
+    printf("Redirect to : %s\n", redirectURL);
     strcpy(websiteURL, "go.com");
-    return true;
-}
 
-char *imgPath()
-{
-    char query[SIZE] = "SRC=", comp[SIZE];
-    char *ans = (char *)calloc(SIZE, sizeof(char));
-
-    FILE *fileptr;
-    fileptr = fopen(webName, "r");
-
-    if (fileptr == NULL)
-    {
-        printf("Error has occurred. File could not be opened\n");
-        return ans;
-    }
-
-    while (fscanf(fileptr, "%s", comp) != EOF)
-    {
-        ll l = strlen(comp);
-
-        if (l <= 6)
-            continue;
-
-        char inp[SIZE], otp[SIZE];
-        ll idx = 0;
-        strcpy(inp, comp);
-        inp[4] = '\0';
-
-        if (!strcmp(query, inp))
-        {
-            for (ll i = 5; comp[i] != '"'; i++)
-            {
-                otp[idx] = comp[i];
-                idx += 1;
-            }
-
-            otp[idx] = '\0';
-            strcpy(ans, otp);
-            fclose(fileptr);
-            return ans;
-        }
-    }
-
-    fclose(fileptr);
-    return ans;
+    return false;
 }
 
 int getRequest(ll socket_id)
@@ -142,6 +149,8 @@ int getRequest(ll socket_id)
 
     if (part2)
     {
+        query = (char *)calloc(SIZE, sizeof(char));
+        strcat(query, "SRC=");
         imgURL = imgPath();
         strcat(requestHeader, imgURL);
     }
