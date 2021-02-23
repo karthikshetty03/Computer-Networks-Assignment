@@ -106,7 +106,7 @@ char *imgPath()
     else
     {
         char *str = (char *)calloc(SIZE, sizeof(char));
-        strcpy(str, strstr(leftData, query));
+        strcat(str, strstr(leftData, query));
 
         if (!strcmp(str, "\0"))
             return ans;
