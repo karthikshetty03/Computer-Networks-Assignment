@@ -218,29 +218,29 @@ char *AuthEnocoder(char s[])
 
 ll ConnectToSock()
 {
-    ll socket_id;
-    struct sockaddr_in server;
-    socket_id = socket(AF_INET, SOCK_STREAM, 0);
+    ll s_id;
+    struct sockaddr_in serv1;
+    s_id = socket(AF_INET, SOCK_STREAM, 0);
 
-    if (socket_id == -1)
+    if (s_id == -1)
     {
         printf("Could not create socket !");
         return -1;
     }
 
-    server.sin_addr.s_addr = inet_addr(proxyIP);
-    server.sin_family = AF_INET;
-    server.sin_port = htons(atoi(proxyPort));
-    setsockopt(socket_id, SOL_SOCKET, SO_REUSEADDR, &(ll){1}, sizeof(int));
+    serv1.sin_addr.s_addr = inet_addr(proxyIP);
+    serv1.sin_family = AF_INET;
+    serv1.sin_port = htons(atoi(proxyPort));
+    setsockopt(s_id, SOL_SOCKET, SO_REUSEADDR, &(ll){1}, sizeof(int));
 
-    if (connect(socket_id, (struct sockaddr *)&server, sizeof(server)) < 0)
+    if (connect(s_id, (struct sockaddr *)&serv1, sizeof(serv1)) < 0)
     {
         puts("Connect Error !");
         return -1;
     }
 
     printf("Connected\n\n");
-    return socket_id;
+    return s_id;
 }
 
 ll separateHeaders(ll readLen)
@@ -373,7 +373,7 @@ int32_t main(int argc, char **argv)
             close(socket2);
             return 0;
         }
-        
+
         close(socket2);
     }
 }
