@@ -42,6 +42,7 @@ void allocAll(ll val, char **a)
 void eliminateTrailingHash()
 {
     ll length = strlen(websiteURL);
+    length--;
     while (websiteURL[length] == '/')
     {
         websiteURL[length] = '\0';
@@ -104,11 +105,20 @@ char *imgPath()
     }
     else
     {
-        char *str = strstr(leftData, query);
-        str = strstr(str, ".");
+        char *str = (char *)calloc(SIZE, sizeof(char));
+        strcpy(str, strstr(leftData, query));
+
+        if (!strcmp(str, "\0"))
+            return ans;
+
+        strcpy(str, strstr(str, "//"));
+
+        if (!strcmp(str, "\0"))
+            return ans;
+
         ll idx = 0;
 
-        for (int i = 1; str[i] != '"'; i++)
+        for (int i = 2; str[i] != '"'; i++)
             ans[idx++] = str[i];
 
         return ans;
@@ -315,20 +325,6 @@ ll downloadContent(ll socket_id, char *fileName)
             idx = separateHeaders(readLen);
             printf("%s\n", buffer);
             fwrite(leftData, 1, idx, fileptr);
-
-            if (!part2)
-            {
-                bool redirect = redirectionCheck();
-
-                if (redirect)
-                {
-                    printf("Redirecting, Please Wait.......\n\n");
-                    close(socket_id);
-                    ll new_socket_id = ConnectToSock();
-                    downloadContent(new_socket_id, fileName);
-                    return 0;
-                }
-            }
         }
         else
         {
@@ -338,6 +334,21 @@ ll downloadContent(ll socket_id, char *fileName)
 
     fclose(fileptr);
     printf("Data recieved successfully !\n\n");
+
+    if (!part2)
+    {
+        bool redirect = redirectionCheck();
+
+        if (redirect)
+        {
+            printf("Redirecting, Please Wait.......\n\n");
+            close(socket_id);
+            ll new_socket_id = ConnectToSock();
+            downloadContent(new_socket_id, fileName);
+            return 0;
+        }
+    }
+
     return 0;
 }
 
