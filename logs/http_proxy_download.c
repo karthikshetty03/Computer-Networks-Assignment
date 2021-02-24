@@ -25,6 +25,17 @@ void initAll()
     imgName = (char *)calloc(SIZE, sizeof(char));
 }
 
+void eliminateTrailingHash()
+{
+    ll length = strlen(websiteURL);
+    length--;
+    while (websiteURL[length] == '/')
+    {
+        websiteURL[length] = '\0';
+        length -= 1;
+    }
+}
+
 void allocAll(ll val, char **a)
 {
     websiteURL = a[1];
@@ -36,20 +47,10 @@ void allocAll(ll val, char **a)
 
     if (val == 8)
     {
-        if(!strcmp(websiteURL, "info.in2p3.fr/"))
+        eliminateTrailingHash();
+        if(!strcmp(websiteURL, "info.in2p3.fr")) 
             shoudlDownload = true;
         imgName = a[7];
-    }
-}
-
-void eliminateTrailingHash()
-{
-    ll length = strlen(websiteURL);
-    length--;
-    while (websiteURL[length] == '/')
-    {
-        websiteURL[length] = '\0';
-        length -= 1;
     }
 }
 
