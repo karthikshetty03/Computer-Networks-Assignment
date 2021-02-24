@@ -9,6 +9,7 @@
 #define SIZE 21096
 
 char ref[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
 char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *leftData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData, *query, *comp, *redirectURL;
 
 bool shoudlDownload = false, part2 = false;
