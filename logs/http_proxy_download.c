@@ -292,7 +292,7 @@ ll downloadContent(ll socket_id, char *fileName)
         return -1;
     }
 
-    do
+    for (readLen = 1; readLen > 0;)
     {
         readLen = read(socket_id, buffer, SIZE);
         recievedLen += readLen;
@@ -303,7 +303,7 @@ ll downloadContent(ll socket_id, char *fileName)
                        printf("%s\n", buffer),
                        fwrite(leftData, 1, idx, fileptr))
                  : (fwrite(buffer, 1, readLen, fileptr));
-    } while (readLen > 0);
+    }
 
     fclose(fileptr);
     printf("Data recieved successfully !\n\n");
