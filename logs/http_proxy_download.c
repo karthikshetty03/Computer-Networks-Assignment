@@ -297,11 +297,10 @@ ll downloadContent(ll socket_id, char *fileName)
         readLen = read(socket_id, buffer, SIZE);
         recievedLen += readLen;
 
-        (f == 0) ? (
-                       f = 1,
-                       idx = separateHeaders(readLen),
-                       printf("%s\n", buffer),
-                       fwrite(leftData, 1, idx, fileptr))
+        (f == 0) ? (f = 1,
+                    idx = separateHeaders(readLen),
+                    printf("%s\n", buffer),
+                    fwrite(leftData, 1, idx, fileptr))
                  : (fwrite(buffer, 1, readLen, fileptr));
     }
 
