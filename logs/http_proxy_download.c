@@ -29,7 +29,8 @@ void eliminateTrailingHash()
 {
     ll length = strlen(websiteURL);
     length--;
-    while (websiteURL[length] == '/')
+
+    for (; websiteURL[length] == '/';)
     {
         websiteURL[length] = '\0';
         length -= 1;
@@ -88,10 +89,13 @@ char *imgPath()
 
         if (!strcmp(query, inp))
         {
-            for (ll i = strlen(query) + 1; comp[i] != '"'; i++)
+            ll i = strlen(query) + 1;
+
+            while (comp[i] != '"')
             {
                 otp[idx] = comp[i];
                 idx += 1;
+                i += 1;
             }
 
             otp[idx] = '\0';
@@ -179,26 +183,28 @@ int getRequest(ll socket_id)
 
 char *AuthEnocoder(char s[])
 {
-    ll idx, bits = 0, pd = 0, cnt = 0, res = 0, m = 0;
+    ll idx, bits = 0, pd = 0, cnt = 0, res = 0, m = 0, i = 0;
     char *ans = (char *)calloc(SIZE, sizeof(char));
     ll length = strlen(s);
 
-    for (ll i = 0; i < length; i += 3)
+    while (i < length)
     {
         res = cnt = bits = 0;
+        ll j = i;
 
-        for (ll j = i; j < length && j <= i + 2; j++)
+        while (j < length && j <= i + 2)
         {
             res <<= 8;
             res |= s[j];
             cnt += 1;
+            j += 1;
         }
 
         bits = cnt * 8;
         pd = bits % 3;
         ll t;
 
-        while (bits)
+        for (; bits != 0;)
         {
             (bits >= 6) ? (t = bits - 6, idx = (res >> t) & 63, bits -= 6)
                         : (t = 6 - bits, idx = (res << t) & 63, bits = 0);
@@ -206,12 +212,17 @@ char *AuthEnocoder(char s[])
             ans[m] = ref[idx];
             m += 1;
         }
+
+        i += 3;
     }
 
-    for (ll i = 1; i <= pd; i++)
+    i = 1;
+
+    while (i <= pd)
     {
         ans[m] = '=';
         m += 1;
+        i += 1;
     }
 
     ans[m] = '\0';
