@@ -260,9 +260,7 @@ ll separateHeaders(ll readLen)
     ll f = 0, idx = 0;
 
     for (ll i = 0; i < readLen; i++)
-    {
         (f == 0) ? (buffer[i] == '\r') ? checker(buffer, &i, &f) : (void)f : (void)(leftData[idx] = buffer[i], idx += 1);
-    }
 
     headerData = (char *)calloc(SIZE, sizeof(char));
     strcpy(headerData, buffer);

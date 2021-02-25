@@ -5,46 +5,6 @@
 #include<arpa/inet.h>
 #include <unistd.h>
 
-// Takes string to be encoded as input 
-// and its length and returns encoded string 
-char* get_logo_url() {
-    char search_string[10241] = "SRC=";
-    char word[10241];
-
-    FILE *fptr;
-    fptr = fopen("index.html", "r");
-
-    while(fscanf(fptr, "%s", word) != EOF) {
-        //puts(word);
-        if(strlen(word) <= 6) {
-            continue;
-        }
-
-        char req[10241];
-        char url[10241];
-        int cnt = 0;
-        for(int i = 0; i < 4; i++) 
-            req[i] = word[i];
-        req[4] = '\0';
-
-        if(strcmp(search_string, req) == 0) {
-            printf("**************FOUND*****************\n");
-            
-            for(int i = 5; word[i]!='"'; i++)
-                url[cnt++] = word[i];
-            url[cnt] = '\0';
-            //puts(url);
-            fclose(fptr);
-            char* str = (char*)malloc(sizeof(char)*strlen(url));
-            strcpy(str, url);
-            return str;
-        }
-    }
-
-    fclose(fptr);
-    return "";
-}
-
 char* base64Encoder(char input_str[]) 
 { 
     int len_str = strlen(input_str);
@@ -126,10 +86,7 @@ int main(int argc , char *argv[])
     int socket_desc;
     char server_reply[10000];
     char few_bytes[10000];
-    //char *filename = "file.html";
-    char *filename = "file.gif";
-    //char *filename = "file.png";
-
+    char *filename = "file.html";
 
     int total_len = 0;
 
@@ -155,40 +112,20 @@ int main(int argc , char *argv[])
         puts("connect error");
         return 1;
     }
-
     puts("Connected\n");
-    char *web_url = "info.in2p3.fr";
-
-    int endlen = strlen(web_url);
-    endlen--;
-
-    while(web_url[endlen] == '/') {
-        web_url[endlen] = '\0';
-        endlen--;
-    }
 
     char *auth_str = base64Encoder("csf303:csf303");
-    //char auth_str[10241] = "Y3NmMzAzOmNzZjMwMw==";
-    //puts(auth_str);
-    //Send request
-    
+    char *web_url = "info.in2p3.fr";
+
     char message[10241] = "GET http://";
     strcat(message, web_url);
     strcat(message, "/");
-    char* img_url = get_logo_url();
-    puts(img_url);
-    strcat(message,  img_url);
-    //strcat(message, "http://go.com");
-    //strcat(message, "http://lumiere-a.akamaihd.net/v1/images/shopdisney-logo-desktop_1f595224.jpeg?region=0,0,1536,300");
-    //strcat(message, "http://info.in2p3.fr");
     strcat(message, " HTTP/1.1\r\nHost: ");
-    strcat(message, web_url);
-    //strcat(message, "lumiere-a.akamaihd.net");
-    //strcat(message, "go.com");
+    strcat(message, "info.in2p3.fr");
     strcat(message, "\r\nProxy-Authorization: Basic ");
     strcat(message, auth_str);
     strcat(message, "\r\nConnection: close\r\n\r\n");
-    puts(message);
+    puts(message); //request headers
 
     if(send(socket_desc, message, strlen(message) , 0) < 0) {
         puts("Send failed");
@@ -226,21 +163,14 @@ int main(int argc , char *argv[])
 
             few_bytes[cnt] = '\0';
             server_reply[cnt] = '\0';
-            puts(server_reply);
+            puts(server_reply); //response headers
             fwrite(few_bytes, cnt, 1, file);
             flag = 1;
             total_len += received_len;
 
-            //printf("*********************** Header separated ***************************\n");
-            //printf("\nreceived = %d\ncurrent img total = %d\n", received_len, total_len);
-            //printf("Data : \n");
-            //puts(few_bytes);
         }
         else if(received_len) {
             total_len += received_len;
-            //printf("\nreceived = %d\ncurrent img total = %d\n", received_len, total_len);
-            //printf("Data : \n");
-            //puts(server_reply);
             fwrite(server_reply, received_len, 1, file);
         }
 
@@ -251,8 +181,8 @@ int main(int argc , char *argv[])
         memset(server_reply, '\0', sizeof server_reply);
     }
 
-    puts("\n***************** Complete Data recieved *******************************");
-
     fclose(file);
     return 0;
 }
+
+/* hchange file name to .gif and web_url to url of img to download img */
