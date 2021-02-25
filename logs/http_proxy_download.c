@@ -27,14 +27,8 @@ void initAll()
 
 void eliminateTrailingHash()
 {
-    ll length = strlen(websiteURL);
-    length--;
-
-    for (; websiteURL[length] == '/';)
-    {
+    for (ll length = strlen(websiteURL) - 1; websiteURL[length] == '/'; length--)
         websiteURL[length] = '\0';
-        length -= 1;
-    }
 }
 
 void allocAll(ll val, char **a)
