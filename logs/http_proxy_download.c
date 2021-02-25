@@ -75,7 +75,7 @@ char *imgPath()
         return ans;
     }
 
-    while (fscanf(fileptr, "%s", comp) != EOF)
+    for (; fscanf(fileptr, "%s", comp) != EOF;)
     {
         ll len = strlen(comp);
 
