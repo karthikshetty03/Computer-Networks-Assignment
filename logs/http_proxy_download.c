@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #define ll long long
-#define SIZE 21096
+#define SIZE 99999
 
 char ref[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
