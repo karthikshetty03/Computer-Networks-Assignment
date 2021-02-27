@@ -1,18 +1,55 @@
+/* f20180141@hyderabad.bits-pilani.ac.in SHetty Karthik Ravindra */
+
+/*
+void initAll()
+//initializes all global variables
+
+void allocAll(ll val, char **a)
+
+
+void combineAuth()
+
+
+char *imgPath()
+
+
+bool redirectionCheck()
+
+
+int getRequest(ll socket_id)
+
+
+char *AuthEnocoder(char s[])
+
+
+ll ConnectToSock()
+
+
+void checker(char *buffer, ll *i, ll *f)
+
+
+ll separateHeaders(ll readLen)
+
+
+*/
+/* ... */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <unistd.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #define ll long long
 #define SIZE 99999
 
 char ref[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *leftData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData, *query, *comp, *redirectURL;
+char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *leftData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData, *query, *comp, *redirectURL, *tempURL;
 
-bool shoudlDownload = false, part2 = false;
+ll shoudlDownload = 0, part2 = 0;
 
 void initAll()
 {
@@ -27,8 +64,8 @@ void initAll()
 
 void eliminateTrailingHash()
 {
-    for (ll length = strlen(websiteURL) - 1; websiteURL[length] == '/'; length--)
-        websiteURL[length] = '\0';
+    for (ll length = strlen(tempURL) - 1; tempURL[length] == '/'; length--)
+        tempURL[length] = '\0';
 }
 
 void allocAll(ll val, char **a)
@@ -42,9 +79,14 @@ void allocAll(ll val, char **a)
 
     if (val == 8)
     {
+        tempURL = (char*)calloc(SIZE, sizeof(char));
+
+        strcpy(tempURL, websiteURL);
         eliminateTrailingHash();
-        if (!strcmp(websiteURL, "info.in2p3.fr"))
-            shoudlDownload = true;
+
+        if (!strcmp(tempURL, "info.in2p3.fr"))
+            shoudlDownload = 1;
+
         imgName = a[7];
     }
 }
@@ -103,7 +145,7 @@ char *imgPath()
     return ans;
 }
 
-bool redirectionCheck()
+ll redirectionCheck()
 {
     ll idx = 0;
     char *temp = (char *)calloc(SIZE, sizeof(char));
@@ -124,10 +166,10 @@ bool redirectionCheck()
     token = strtok(NULL, " ");
 
     if (!strcmp(token, "200"))
-        return false;
+        return 0;
 
     if (token[0] != '3')
-        return false;
+        return 0;
 
     redirectURL = (char *)calloc(SIZE, sizeof(char));
     websiteURL = (char *)calloc(SIZE, sizeof(char));
@@ -143,18 +185,18 @@ bool redirectionCheck()
 
     printf("Redirect to : %s\n", redirectURL);
     strcat(websiteURL, redirectURL);
-    return true;
+    return 1;
 }
 
-int getRequest(ll socket_id)
+ll getRequest(ll socket_id)
 {
     requestHeader = (char *)calloc(SIZE, sizeof(char));
     strcat(requestHeader, "GET http://");
     strcat(requestHeader, websiteURL);
-    strcat(requestHeader, "/");
 
     if (part2)
     {
+        strcat(requestHeader, "/");
         query = (char *)calloc(SIZE, sizeof(char));
         strcat(query, "SRC=");
         imgURL = imgPath();
@@ -173,6 +215,8 @@ int getRequest(ll socket_id)
         puts("Send failed");
         return -1;
     }
+
+    return 0;
 }
 
 char *AuthEnocoder(char s[])
@@ -281,7 +325,6 @@ ll downloadContent(ll socket_id, char *fileName)
     buffer = (char *)calloc(SIZE, sizeof(char));
     leftData = (char *)calloc(SIZE, sizeof(char));
 
-    eliminateTrailingHash();
     combineAuth();
     encodedCredentials = AuthEnocoder(rawCredentials);
 
@@ -314,7 +357,7 @@ ll downloadContent(ll socket_id, char *fileName)
 
     if (!part2)
     {
-        bool redirect = redirectionCheck();
+        ll redirect = redirectionCheck();
 
         if (redirect)
         {
@@ -329,6 +372,7 @@ ll downloadContent(ll socket_id, char *fileName)
     return 0;
 }
 
+//driver code
 int32_t main(int argc, char **argv)
 {
     initAll();
@@ -351,7 +395,7 @@ int32_t main(int argc, char **argv)
 
     if (shoudlDownload)
     {
-        part2 = true;
+        part2 = 1;
         ll socket2 = ConnectToSock();
 
         if (socket2 == -1)
