@@ -6,44 +6,22 @@
 #include <unistd.h>
 #include<stdbool.h>
 
-//find url of logo in index.html
-char* get_logo_url(char* filename) {
-    char search_string[10241] = "SRC=";
-    char word[10241];
+//buffer(int *socket... )
+//3 nahi
+//return false;
+//3 hai
+//close(*socket)
+/*
+  int socket_desc = sockeConnection(proxy_ip, proxy_port);
+  receive_file(&socket_desc, file_name, web_url, "", username, password);
+*/
 
-    FILE *fptr;
-    fptr = fopen(filename, "r");
 
-    while(fscanf(fptr, "%s", word) != EOF) {
-        if(strlen(word) <= 6) {
-            continue;
-        }
 
-        char req[10241];
-        char url[10241];
-        
-        int cnt = 0;
 
-        for(int i = 0; i < 4; i++) 
-            req[i] = word[i];
 
-        req[4] = '\0';
 
-        if(strcmp(search_string, req) == 0) {
-            for(int i = 5; word[i]!='"'; i++)
-                url[cnt++] = word[i];
 
-            url[cnt] = '\0';
-            fclose(fptr);
-            char* str = (char*)malloc(sizeof(char)*10241);
-            strcpy(str, url);
-            return str;
-        }
-    }
-
-    fclose(fptr);
-    return "";
-}
 
 // Takes string to be encoded as input 
 // and its length and returns encoded string 
@@ -119,7 +97,7 @@ char* base64Encoder(char input_str[])
 }
 
 //download required file
-int receive_file(int socket, char* filename, char* web_url, char* img_url, char* username, char* password)
+int receive_file(int *socket, char* filename, char* web_url, char* img_url, char* username, char* password)
 {
   int recv_size = 0, read_size, flag = 0, cnt = 0, in = 0;
   char *buffer, *few_bytes;
@@ -154,7 +132,7 @@ int receive_file(int socket, char* filename, char* web_url, char* img_url, char*
   strcat(message, "\r\nConnection: close\r\n\r\n");
   puts(message);
 
-  if (send(socket, message , strlen(message) , 0) < 0) {
+  if (send(*socket, message , strlen(message) , 0) < 0) {
     puts("Send failed");
     return 1;
   }
@@ -172,7 +150,7 @@ int receive_file(int socket, char* filename, char* web_url, char* img_url, char*
     //first chunk of response, so need to separate the headers
     if (flag == 0) {
       flag = 1;
-      read_size = read(socket, buffer, 10241);
+      read_size = read(*socket, buffer, 10241);
 
       for(int i = 0; i < read_size; i++) {
           if(in == 0 && buffer[i] != '\r') {
@@ -198,7 +176,7 @@ int receive_file(int socket, char* filename, char* web_url, char* img_url, char*
     }
 
     //subsequent chunks of data
-    read_size = read(socket, buffer, 10241);
+    read_size = read(*socket, buffer, 10241);
     fwrite(buffer, 1, read_size, file);
     recv_size += read_size;
   } while (read_size > 0);
@@ -245,26 +223,25 @@ int main(int argc, char *argv[]) {
   char* file_name = "";
   char* img_name = "";
 
-  web_url = argv[1];
+  web_url = argv[1]; 
   proxy_ip = argv[2];
   proxy_port = argv[3];
   username = argv[4];
   password = argv[5];
   file_name = argv[6];
+  img_name = argv[7];
 
-  if(argc == 8) {
+  if(!strcmp(web_url, "info.in2p3.fr"))
     downloadLogo = true;
-    img_name = argv[7];
-  }
 
   int socket_desc = sockeConnection(proxy_ip, proxy_port);
-  receive_file(socket_desc, file_name, web_url, "", username, password);
+  receive_file(&socket_desc, file_name, web_url, "", username, password);
   close(socket_desc);
 
   if(downloadLogo) {
     socket_desc = sockeConnection(proxy_ip, proxy_port);
-    char* img_url = get_logo_url(file_name);
-    receive_file(socket_desc, img_name, web_url, img_url, username, password);
+    char* img_url = "cc.gif";
+    receive_file(&socket_desc, img_name, web_url, img_url, username, password);
     close(socket_desc);
   }
   

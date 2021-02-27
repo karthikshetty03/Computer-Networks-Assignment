@@ -2,38 +2,40 @@
 
 /*
 void initAll()
-//initializes all global variables
+//initialize and allocate memory to all global variables
 
 void allocAll(ll val, char **a)
-
+//inita;ize variables with command line arguments
 
 void combineAuth()
-
+//combine credentials as per standard format username:password
 
 char *imgPath()
-
+//find the location of the image and extract its url
 
 bool redirectionCheck()
-
+//return 0 if response other than 30x, else call downloadContent function again after extracting new location
 
 int getRequest(ll socket_id)
-
+//formulate the get request header
 
 char *AuthEnocoder(char s[])
-
+//encode credentials using base64 encoder function
 
 ll ConnectToSock()
-
+//return sock_id every time you call this for a new socket connection
 
 void checker(char *buffer, ll *i, ll *f)
-
+//check for termination of response headers in the recieved buffer
 
 ll separateHeaders(ll readLen)
+//called for the first response, separates the response headers and data
 
-
+int32_main(int argc, char** argv)
+driver code for the who process of downloading webpage (if the website is for logo, then logo as well)
 */
-/* ... */
 
+/* ... */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -79,7 +81,7 @@ void allocAll(ll val, char **a)
 
     if (val == 8)
     {
-        tempURL = (char*)calloc(SIZE, sizeof(char));
+        tempURL = (char *)calloc(SIZE, sizeof(char));
 
         strcpy(tempURL, websiteURL);
         eliminateTrailingHash();
@@ -165,9 +167,7 @@ ll redirectionCheck()
     char *token = strtok(temp, " ");
     token = strtok(NULL, " ");
 
-    if (!strcmp(token, "200"))
-        return 0;
-
+    //retunr 0, if the response code does not starts with 3
     if (token[0] != '3')
         return 0;
 
@@ -184,6 +184,7 @@ ll redirectionCheck()
     }
 
     printf("Redirect to : %s\n", redirectURL);
+    //replace wehsiteURL with the new redirection url
     strcat(websiteURL, redirectURL);
     return 1;
 }
@@ -194,6 +195,7 @@ ll getRequest(ll socket_id)
     strcat(requestHeader, "GET http://");
     strcat(requestHeader, websiteURL);
 
+    //check whether the function call is for downloading webpage or downloading the logo
     if (part2)
     {
         strcat(requestHeader, "/");
@@ -355,29 +357,27 @@ ll downloadContent(ll socket_id, char *fileName)
     fclose(fileptr);
     printf("Data recieved successfully !\n\n");
 
-    if (!part2)
-    {
-        ll redirect = redirectionCheck();
+    //check for redirection
+    ll redirect = redirectionCheck();
 
-        if (redirect)
-        {
-            printf("Redirecting, Please Wait.......\n\n");
-            close(socket_id);
-            ll new_socket_id = ConnectToSock();
-            downloadContent(new_socket_id, fileName);
-            return 0;
-        }
+    if (redirect)
+    {
+        printf("Redirecting, Please Wait.......\n\n");
+        close(socket_id);
+        ll new_socket_id = ConnectToSock();
+        downloadContent(new_socket_id, fileName);
     }
 
     return 0;
 }
 
-//driver code
 int32_t main(int argc, char **argv)
 {
+    //initialize and allocate arguments
     initAll();
     allocAll(argc, argv);
 
+    //open first socket for webpage download
     ll socket1 = ConnectToSock();
 
     if (socket1 == -1)
@@ -393,6 +393,7 @@ int32_t main(int argc, char **argv)
 
     close(socket1);
 
+    //open socket2 for logo download if shouldDownload variable 
     if (shoudlDownload)
     {
         part2 = 1;

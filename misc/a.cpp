@@ -1,18 +1,61 @@
+/* f20180141@hyderabad.bits-pilani.ac.in SHetty Karthik Ravindra */
+
+/*
+
+void initAll()
+//initialize and allocate memory to all global variables
+
+void allocAll(ll val, char **a)
+//inita;ize variables with command line arguments
+
+
+void combineAuth()
+//combine credentials as per standard format username:password
+
+char *imgPath()
+//find the location of the image and extract its url
+
+bool redirectionCheck()
+//return 0 if response other than 30x, else call downloadContent function again after extracting new location
+
+int getRequest(ll socket_id)
+//formulate the get request header
+
+char *AuthEnocoder(char s[])
+//encode credentials using base64 encoder function
+
+ll ConnectToSock()
+//return sock_id every time you call this for a new socket connection
+
+void checker(char *buffer, ll *i, ll *f)
+//check for termination of response headers in the recieved buffer
+
+ll separateHeaders(ll readLen)
+//called for the first response, separates the response headers and data
+
+int32_main(int argc, char** argv)
+driver code for the who process of downloading webpage (if the website is for logo, then logo as well)
+
+*/
+
+/* ... */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <unistd.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #define ll long long
-#define SIZE 21096
+#define SIZE 99999
 
 char ref[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *leftData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData, *query, *comp, *redirectURL;
+char *websiteURL, *proxyIP, *proxyPort, *userID, *userPassword, *webName, *imgName, *buffer, *leftData, *rawCredentials, *requestHeader, *imgURL, *encodedCredentials, *headerData, *query, *comp, *redirectURL, *tempURL;
 
-bool shoudlDownload = false, part2 = false;
+ll shoudlDownload = 0, part2 = 0;
 
 void initAll()
 {
@@ -27,13 +70,8 @@ void initAll()
 
 void eliminateTrailingHash()
 {
-    ll length = strlen(websiteURL);
-    length--;
-    while (websiteURL[length] == '/')
-    {
-        websiteURL[length] = '\0';
-        length -= 1;
-    }
+    for (ll length = strlen(tempURL) - 1; tempURL[length] == '/'; length--)
+        tempURL[length] = '\0';
 }
 
 void allocAll(ll val, char **a)
@@ -47,9 +85,14 @@ void allocAll(ll val, char **a)
 
     if (val == 8)
     {
+        tempURL = (char *)calloc(SIZE, sizeof(char));
+
+        strcpy(tempURL, websiteURL);
         eliminateTrailingHash();
-        if (!strcmp(websiteURL, "info.in2p3.fr"))
-            shoudlDownload = true;
+
+        if (!strcmp(tempURL, "info.in2p3.fr"))
+            shoudlDownload = 1;
+
         imgName = a[7];
     }
 }
@@ -74,7 +117,7 @@ char *imgPath()
         return ans;
     }
 
-    while (fscanf(fileptr, "%s", comp) != EOF)
+    for (; fscanf(fileptr, "%s", comp) != EOF;)
     {
         ll len = strlen(comp);
 
@@ -88,10 +131,13 @@ char *imgPath()
 
         if (!strcmp(query, inp))
         {
-            for (ll i = strlen(query) + 1; comp[i] != '"'; i++)
+            ll i = strlen(query) + 1;
+
+            while (comp[i] != '"')
             {
                 otp[idx] = comp[i];
                 idx += 1;
+                i += 1;
             }
 
             otp[idx] = '\0';
@@ -105,7 +151,7 @@ char *imgPath()
     return ans;
 }
 
-bool redirectionCheck()
+ll redirectionCheck()
 {
     ll idx = 0;
     char *temp = (char *)calloc(SIZE, sizeof(char));
@@ -126,10 +172,10 @@ bool redirectionCheck()
     token = strtok(NULL, " ");
 
     if (!strcmp(token, "200"))
-        return false;
+        return 0;
 
     if (token[0] != '3')
-        return false;
+        return 0;
 
     redirectURL = (char *)calloc(SIZE, sizeof(char));
     websiteURL = (char *)calloc(SIZE, sizeof(char));
@@ -145,18 +191,18 @@ bool redirectionCheck()
 
     printf("Redirect to : %s\n", redirectURL);
     strcat(websiteURL, redirectURL);
-    return true;
+    return 1;
 }
 
-int getRequest(ll socket_id)
+ll getRequest(ll socket_id)
 {
     requestHeader = (char *)calloc(SIZE, sizeof(char));
     strcat(requestHeader, "GET http://");
     strcat(requestHeader, websiteURL);
-    strcat(requestHeader, "/");
 
     if (part2)
     {
+        strcat(requestHeader, "/");
         query = (char *)calloc(SIZE, sizeof(char));
         strcat(query, "SRC=");
         imgURL = imgPath();
@@ -175,30 +221,34 @@ int getRequest(ll socket_id)
         puts("Send failed");
         return -1;
     }
+
+    return 0;
 }
 
 char *AuthEnocoder(char s[])
 {
-    ll idx, bits = 0, pd = 0, cnt = 0, res = 0, m = 0;
+    ll idx, bits = 0, pd = 0, cnt = 0, res = 0, m = 0, i = 0;
     char *ans = (char *)calloc(SIZE, sizeof(char));
     ll length = strlen(s);
 
-    for (ll i = 0; i < length; i += 3)
+    while (i < length)
     {
         res = cnt = bits = 0;
+        ll j = i;
 
-        for (ll j = i; j < length && j <= i + 2; j++)
+        while (j < length && j <= i + 2)
         {
             res <<= 8;
             res |= s[j];
             cnt += 1;
+            j += 1;
         }
 
         bits = cnt * 8;
         pd = bits % 3;
         ll t;
 
-        while (bits)
+        for (; bits != 0;)
         {
             (bits >= 6) ? (t = bits - 6, idx = (res >> t) & 63, bits -= 6)
                         : (t = 6 - bits, idx = (res << t) & 63, bits = 0);
@@ -206,12 +256,17 @@ char *AuthEnocoder(char s[])
             ans[m] = ref[idx];
             m += 1;
         }
+
+        i += 3;
     }
 
-    for (ll i = 1; i <= pd; i++)
+    i = 1;
+
+    while (i <= pd)
     {
         ans[m] = '=';
         m += 1;
+        i += 1;
     }
 
     ans[m] = '\0';
@@ -260,7 +315,9 @@ ll separateHeaders(ll readLen)
     ll f = 0, idx = 0;
 
     for (ll i = 0; i < readLen; i++)
+    {
         (f == 0) ? (buffer[i] == '\r') ? checker(buffer, &i, &f) : (void)f : (void)(leftData[idx] = buffer[i], idx += 1);
+    }
 
     headerData = (char *)calloc(SIZE, sizeof(char));
     strcpy(headerData, buffer);
@@ -274,7 +331,6 @@ ll downloadContent(ll socket_id, char *fileName)
     buffer = (char *)calloc(SIZE, sizeof(char));
     leftData = (char *)calloc(SIZE, sizeof(char));
 
-    eliminateTrailingHash();
     combineAuth();
     encodedCredentials = AuthEnocoder(rawCredentials);
 
@@ -290,39 +346,30 @@ ll downloadContent(ll socket_id, char *fileName)
         return -1;
     }
 
-    do
+    for (readLen = 1; readLen > 0;)
     {
         readLen = read(socket_id, buffer, SIZE);
         recievedLen += readLen;
 
-        if (!f)
-        {
-            f = 1;
-            idx = separateHeaders(readLen);
-            printf("%s\n", buffer);
-            fwrite(leftData, 1, idx, fileptr);
-        }
-        else
-        {
-            fwrite(buffer, 1, readLen, fileptr);
-        }
-    } while (readLen > 0);
+        (f == 0) ? (f = 1,
+                    idx = separateHeaders(readLen),
+                    printf("%s\n", buffer),
+                    fwrite(leftData, 1, idx, fileptr))
+                 : (fwrite(buffer, 1, readLen, fileptr));
+    }
 
     fclose(fileptr);
     printf("Data recieved successfully !\n\n");
 
-    if (!part2)
-    {
-        bool redirect = redirectionCheck();
+    ll redirect = redirectionCheck();
 
-        if (redirect)
-        {
-            printf("Redirecting, Please Wait.......\n\n");
-            close(socket_id);
-            ll new_socket_id = ConnectToSock();
-            downloadContent(new_socket_id, fileName);
-            return 0;
-        }
+    if (redirect)
+    {
+        printf("Redirecting, Please Wait.......\n\n");
+        close(socket_id);
+        ll new_socket_id = ConnectToSock();
+        downloadContent(new_socket_id, fileName);
+        return 0;
     }
 
     return 0;
@@ -333,6 +380,7 @@ int32_t main(int argc, char **argv)
     initAll();
     allocAll(argc, argv);
 
+    //open first socket for webpage download
     ll socket1 = ConnectToSock();
 
     if (socket1 == -1)
@@ -348,9 +396,10 @@ int32_t main(int argc, char **argv)
 
     close(socket1);
 
+    //open socket2 for logo download if shouldDownload variable is set
     if (shoudlDownload)
     {
-        part2 = true;
+        part2 = 1;
         ll socket2 = ConnectToSock();
 
         if (socket2 == -1)
