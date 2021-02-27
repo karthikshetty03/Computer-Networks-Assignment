@@ -1,6 +1,10 @@
 /* f20180141@hyderabad.bits-pilani.ac.in SHetty Karthik Ravindra */
 
 /*
+
+
+******************************** HELPER FUNCTIONS **********************************************
+
 void initAll()
 //initialize and allocate memory to all global variables
 
@@ -31,8 +35,38 @@ void checker(char *buffer, ll *i, ll *f)
 ll separateHeaders(ll readLen)
 //called for the first response, separates the response headers and data
 
+ll downloadContent(ll socket_id, char *fileName)
+//the function to download website as well as logo (if needed), from where above subfunctions are called 
+
 int32_main(int argc, char** argv)
 driver code for the who process of downloading webpage (if the website is for logo, then logo as well)
+
+****************************************************************************************************
+
+
+
+
+Approach/Algorithm : (for info.in2p3.fr) downloading website as well as logo
+
+Step1 : Declare all variables globally
+Step2 : initialize all of them using initAll function call
+Step3 : Allocate the coomand line arguments to all the variables using allocateAll function call
+Step4 : Now to download the website/logo, create socket using connectToSock() function passing proxyIP and proxyPort as args
+Step5 : Call downloadContent function with socket_id and webpage/logo filename as arguments
+Step6 : Call combineAuth() to format username password in standard format and call authEncoder to encode the credentials
+Step7 : Call get request to formulate request header and send request to squid proxy
+Step8 : if getRequest does not return -1, proceed further to opem website file 
+Step9 : we do not get all response together in one go, so loop over till we recieve response
+Step10: For the first response call separateHeaders() to separate Response Headers from data
+Step11: write remaining separated data to file and subsequent data in loop into file as well
+Step12: Close the file and check for redirection by calling the redirection function
+Step13: check first line for response code in headerData, if it starts with 3, find new url to redirect, replace with weburl and return 1
+Step14 :if redirection function returns 1, then call downloadContent function again with replaced weburl and same filename as arguments
+Step15 :if redirecton function returns 0, close the socket and return 0;
+Repeat same steps for logo as well
+
+
+
 */
 
 /* ... */
@@ -44,6 +78,7 @@ driver code for the who process of downloading webpage (if the website is for lo
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+
 #define ll long long
 #define SIZE 99999
 
