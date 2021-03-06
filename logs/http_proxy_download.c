@@ -1,4 +1,4 @@
-/* f20180141@hyderabad.bits-pilani.ac.in SHetty Karthik Ravindra */
+/* f20180141@hyderabad.bits-pilani.ac.in Shetty Karthik Ravindra */
 
 /*
 
@@ -390,7 +390,7 @@ ll downloadContent(ll socket_id, char *fileName)
     }
 
     fclose(fileptr);
-    printf("Data recieved successfully !\n\n");
+    printf("Done !\n\n");
 
     //check for redirection
     ll redirect = redirectionCheck();
