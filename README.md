@@ -3,15 +3,16 @@ CS F303 Computer Networks : 2020-21 Semester II
 Assignment1 Statement:
 We often access the web through a proxy. Squid is a caching and forwarding HTTP web proxy. In this
 assignment, you have to write a program using sockets in the C language, without using any high level
-libraries, to download the main page and logo from through a squid proxy,
+libraries, to download the main page and logo through a squid proxy,
 which has been set up by the instructors. The proxy configuration is as follows:
-Server: 182.75.45.22
-Port: 13128
-Login: csf303
-Password: csf303
+
+### Server: 182.75.45.22
+### Port: 13128
+### Login: csf303
+### Password: csf303
 If you receive a HTTP 30x response you have to handle that and follow the redirection. You have to
 figure out the HTTP protocol for proxy access on your own. It will help to set your browser to the
-above proxy, access http://bits-pilani.ac.in/ from the browser and look at Wireshark traces from your
+above proxy, access urls given below from the browser and look at Wireshark traces from your
 browser while the request is being made and responded to. Also refer to the HTTP 1.1 RFC. For
 simplicity, just write a single program http_proxy_download.c, which should run as follows:
 $ gcc http_proxy_download.c -o http_proxy_download.out
