@@ -15,8 +15,10 @@ figure out the HTTP protocol for proxy access on your own. It will help to set y
 above proxy, access urls given below from the browser and look at Wireshark traces from your
 browser while the request is being made and responded to. Also refer to the HTTP 1.1 RFC. For
 simplicity, just write a single program http_proxy_download.c, which should run as follows:
-$ gcc http_proxy_download.c -o http_proxy_download.out
-$ ./http_proxy_downoad.out bits-pilani.ac.in 182.75.45.22 13128 csf303 csf303 index.html logo.gif
+
+### $ gcc http_proxy_download.c -o http_proxy_download.out
+### $ ./http_proxy_downoad.out bits-pilani.ac.in 182.75.45.22 13128 csf303 csf303 index.html logo.gif
+
 where, as would be obvious, the command line arguments are respectively the URL, proxy IP, proxy
 port, login, password, filename to save html as, filename to save logo as.
 Do not hardcode any parameter in your program! Your program should work even if the proxy IP
