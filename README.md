@@ -19,9 +19,8 @@ Program works even if the proxy IP changes, or the login/password changes, or BI
 
 ### Test cases:
 1. Correctly downloading the image from http://info.in2p3.fr/. 
-2. Correct download of a second website (image will not be checked)
-3. Correction download of a third website (image will not be checked)4. Correct handling of http redirects
-5. Bonus: handling https for a static https website only (no image download required)
+2. Correct download of HTTP websites and correct handling of http redirects as well, if any.
+5. Bonus: handling https for a static https website and handling of redirects, if any (Needs to be done)
 
 The following domains to be accessed through the proxy to test the code:
     
