@@ -27,13 +27,13 @@ they change the image or the filename it should still work.
 3. Correction download of a third website (image will not be checked)4. Correct handling of http redirects
 5. Bonus: handling https for a static https website only (no image download required)
 
-        The following domains to be accessed through the proxy to test the code:
+    The following domains to be accessed through the proxy to test the code:
 
-        1. .google.com
-        2. .india.gov.in
-        3. .bits-pilani.ac.in
-        4. .in2p3.fr
-        5. .go.com
-        6. .jandarshan.cg.nic.in
+    1. .google.com
+    2. .india.gov.in
+    3. .bits-pilani.ac.in
+    4. .in2p3.fr
+    5. .go.com
+    6. .jandarshan.cg.nic.in
 
-        Use automated perl script for testing
+    Use automated perl script for testing
