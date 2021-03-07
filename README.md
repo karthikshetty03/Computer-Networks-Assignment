@@ -18,7 +18,7 @@ port, login, password, filename to save html as, filename to save logo as.
 Program works even if the proxy IP changes, or the login/password changes, or BITS changes its logo image, or the base URL is changed.
 
 ### Test cases:
-1. Correctly downloading the image from http://info.in2p3.fr/. 
+1. Correctly downloading the website and image from http://info.in2p3.fr/. 
 2. Correct download of HTTP websites and correct handling of http redirects as well, if any.
 5. Bonus: handling https for a static https website and handling of redirects, if any (Needs to be done)
 
