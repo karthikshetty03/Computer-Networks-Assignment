@@ -4,7 +4,7 @@ The proxy configuration is as follows:
 
 ### Server: 182.75.45.22
 ### Port: 13128
-### Login: csf303
+### UserName: csf303
 ### Password: csf303
 
 If we receive a HTTP 30x response, that is handled by following the redirection. 
