@@ -1,6 +1,3 @@
-CS F303 Computer Networks : 2020-21 Semester II
-
-Assignment1 Statement:
 We often access the web through a proxy. Squid is a caching and forwarding HTTP web proxy. In this
 assignment, you have to write a program using sockets in the C language, without using any high level
 libraries, to download the main page and logo through a squid proxy,
