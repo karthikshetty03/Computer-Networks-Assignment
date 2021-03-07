@@ -18,13 +18,12 @@ port, login, password, filename to save html as, filename to save logo as.
 Program works even if the proxy IP changes, or the login/password changes, or BITS changes its logo image, or the base URL is changed.
 
 ### Test cases:
-
 1. Correctly downloading the image from http://info.in2p3.fr/. 
 2. Correct download of a second website (image will not be checked)
 3. Correction download of a third website (image will not be checked)4. Correct handling of http redirects
 5. Bonus: handling https for a static https website only (no image download required)
 
-    The following domains to be accessed through the proxy to test the code:
+The following domains to be accessed through the proxy to test the code:
     
     1. .google.com
     2. .india.gov.in
@@ -32,6 +31,5 @@ Program works even if the proxy IP changes, or the login/password changes, or BI
     4. .in2p3.fr
     5. .go.com
     6. .jandarshan.cg.nic.in
-  
-
-    Use automated perl script for testing
+ 
+### Use automated perl script for testing
