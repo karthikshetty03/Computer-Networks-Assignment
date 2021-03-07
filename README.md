@@ -1,6 +1,6 @@
-We often access the web through a proxy. Squid is a caching and forwarding HTTP web proxy. This is a program written using sockets in the C language, without using any high level
-libraries, to download the main page and logo through a squid proxy,
-which has been set up by the instructors. The proxy configuration is as follows:
+We often access the web through a proxy. Squid is a caching and forwarding HTTP web proxy. This is a program written using sockets in C language, without using any high level
+libraries, to download the main page and logo through a squid proxy.
+The proxy configuration is as follows:
 
 ### Server: 182.75.45.22
 ### Port: 13128
