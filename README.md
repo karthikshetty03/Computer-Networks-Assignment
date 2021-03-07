@@ -19,10 +19,7 @@ Program works even if the proxy IP changes, or the login/password changes, or BI
 
 ### Test cases:
 
-1. Correctly downloading the image from http://info.in2p3.fr/. This is the only image we will test
-for. For other websites image download will not be tested. You can hardcode the location and
-name of the image file in the base html for this test case. However, in the unlikely event that
-they change the image or the filename it should still work.
+1. Correctly downloading the image from http://info.in2p3.fr/. 
 2. Correct download of a second website (image will not be checked)
 3. Correction download of a third website (image will not be checked)4. Correct handling of http redirects
 5. Bonus: handling https for a static https website only (no image download required)
